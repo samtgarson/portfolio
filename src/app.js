@@ -28,6 +28,12 @@ angular.module('app', [
         $scope.title = "title";
         $scope.$on('$stateChangeSuccess', function(e, toState) {
             $scope.title = toState.name?$filter('titlecase')(toState.name) + ' | title':'title';
+            $scope.page = toState.name?toState.name.toLowerCase():'';
         });
+
+        $scope.switchFn = function() {
+            var states = ['home', 'about'];
+            return states.indexOf($scope.page) >= 0;
+        };
     });
 

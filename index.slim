@@ -13,6 +13,8 @@ html lang="en" ng-app="app" ng-controller="appController"
         /[if lt IE 9]
             script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"
 
-    body breakpoint="{0:'small', 750:'mid', 1100:''}" 
-        nav {{hello}}
+    body ng-class="page"
+        nav 
+            h1.name.rando Sam 
+            h1.name.rando Garson
         ui-view

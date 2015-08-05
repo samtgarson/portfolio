@@ -1,3 +1,2 @@
 angular.module("templates", []).run(["$templateCache", function($templateCache) {$templateCache.put("features/_feature/_feature.html","\n");
-$templateCache.put("patterns/_pattern/_pattern.html","\n");
-$templateCache.put("features/home/_home.html","<section>\n  welcome home\n</section>\n");}]);
+$templateCache.put("features/home/_home.html","<section>\n  <b>I turn great ideas into great products.</b>\n  <p>\n    You’ve probably seen some.\n  </p>\n  <ul>\n    <li>\n      British Airways \n    </li>\n    <li>\n      Converse \n    </li>\n    <li>\n      Cannes Lions \n    </li>\n    <li>\n      Protein \n    </li>\n    <li>\n      Microsoft\n    </li>\n  </ul>\n  <a ui-sref=\"stories\">Case studies &rarr;</a><a ui-sref=\"contact\">Get in touch &rarr;</a>\n</section>\n");}]);

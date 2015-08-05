@@ -1,14 +1,46 @@
-h1, .h1 { font-size: 300%; letter-spacing: -2px; font-weight: 100; line-height: 1.2em; display: inline-block;}
-.small h1, .small .h1 {font-size: 180%; font-weight: 300; letter-spacing: -1px;}
+@font-face {
+    font-family: 'PostGrotesk';
+    src: url('fonts/PostGrotesk-Light.otf') format('opentype');
+    font-weight: 300;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'PostGrotesk';
+    src: url('fonts/PostGrotesk-Book.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'PostGrotesk';
+    src: url('fonts/PostGrotesk-BookItalic.otf') format('opentype');
+    font-weight: 400;
+    font-style: italic;
+}
+@font-face {
+    font-family: 'PostGrotesk';
+    src: url('fonts/PostGrotesk-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'PostGrotesk';
+    src: url('fonts/PostGrotesk-MediumItalic.otf') format('opentype');
+    font-weight: 500;
+    font-style: italic;
+}
 
-h2, .h2 { font-size: 250%; letter-spacing: -1px; font-weight: 100; line-height: 1.2em; display: inline-block;}
 
-h3, .h3 { font-size: 200%; font-weight: 100; line-height: calc(200% * 1.2); display: inline-block;}
+h1, .h1 { font-size: 500%; font-weight: 100; line-height: 1.2em;}
 
-h4, .h4 { font-size: 180%; font-weight: 300; line-height: calc(180% * 1.2); display: inline-block;}
+h2, .h2 { font-size: 250%; font-weight: 100; line-height: 1.2em;}
 
-h5, .h5 { font-size: 130%; font-weight: 300; line-height: calc(130% * 1.2); display: inline-block;}
+@mixin alt-font {
+    text-transform: uppercase;
+    font-size: .8em;
+    letter-spacing: 3px;
+}
 
-@mixin alt-font() {
-    
+body {
+    font: 400 normal 20px/180% PostGrotesk, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
