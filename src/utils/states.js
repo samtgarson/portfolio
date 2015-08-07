@@ -29,7 +29,7 @@ angular.module('states', [])
             
         $locationProvider.html5Mode(true);
 
-        // $stickyStateProvider.enableDebug(true);
+        $stickyStateProvider.enableDebug(true);
 
         // Function to generate template urls
         function templater (page, child) {
@@ -43,5 +43,30 @@ angular.module('states', [])
                 'url'               : '/',
                 'templateUrl': templater('home'), 
                 'controller': 'homeController'
+            })
+            .state('stories', {
+                'url'               : '/stories',
+                'templateUrl': templater('stories'), 
+                'controller': 'storiesController',
+                'resolve': {
+                    'Stories': function(Prismic) {
+                        return Prismic.query('[[:d = at(document.type, "story")]][my.story.date desc]');
+                    }
+                },
+            })
+            .state('story', {
+                'url'               : '/:id',
+                'templateUrl': templater('story'), 
+                'controller': 'storyController',
+                'resolve': {
+                    'Stories': function(Prismic) {
+                        return Prismic.query('[[:d = at(document.type, "story")]][my.story.date desc]');
+                    }
+                }
+            })
+            .state('talk', {
+                'url'               : '/talk',
+                'templateUrl': templater('talk'), 
+                'controller': 'talkController'
             });
     });

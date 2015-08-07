@@ -1,0 +1,145 @@
+ol.stories-list {
+    list-style-type: none;
+    width: 400px;
+
+    & > li {
+        counter-increment: step-counter;
+        position: relative;
+
+        &:hover {
+            h1::after {
+                margin-left: 20px;
+            }
+            img {
+                transform: scale(1.05) translateX(-65%) !important;
+            }
+        }
+
+        h1.title {
+            font-size: 2.3em;
+            font-weight: $medium;
+            margin: 0;
+            position: relative;
+
+            &::after {
+                content: ' \2192';
+            }
+        }
+        img.cover {
+            position: absolute;
+            left: 0;
+            top: -100px;
+            height: 310px;
+            z-index: -1;
+            opacity: .3;
+            transform: translateX(-65%);
+        }
+
+        &::before {
+            content: counter(step-counter);
+            position: absolute;
+            font-size: 2.3em;
+            top: 12px;
+            left: -250px;
+            font-weight: $light;
+        }
+    }
+}
+.story {
+    h1.title {
+        width: 70vw;
+        height: 20vh;
+        left: -5vw;
+        top: -10vh;
+        font-size: 6.5vw;
+        font-weight: $book;
+        position: relative;
+        display: block;
+        line-height: 1.5em;
+        letter-spacing: 5px;
+        span {
+            @include spanTransition;
+        }
+    }
+    img.cover {
+        position: absolute;
+        height: 450px;
+        opacity: .3;
+        left: -25vh;
+        top: -15vh;
+        z-index: -1;
+    }
+    .date {
+        padding-top: 175px;
+    }
+    .standfirst {
+        font-weight: $medium;
+        margin-top: 0;
+        margin-bottom: 80px;
+        max-width: 750px;
+    }
+    .content {
+        display: block;
+        max-width: 750px;
+        text-justify: left;
+
+        img {
+            max-width: 650px;
+        }
+
+        h1 {
+            font-size: 1.2em;
+            font-weight: $medium;
+            margin-top: 100px;
+        }
+
+        .gallery-wrapper {
+            max-width: 100%;
+            margin: 100px 0;
+            overflow-x: visible;
+            .gallery {
+                width: 1000%;
+                height: auto;
+                transition: margin .3s ease;
+            }
+            img {
+                display: inline-block;
+                height: 100%;
+                position: relative;
+                margin-right: 40px;
+                opacity: .4;
+                display: inline-block;
+                cursor: url('img/left-arrow.svg'), w-resize;
+                transition: opacity 1s ease;
+
+                &.selected {
+                    opacity: 1;
+                }
+
+                &.selected.mouse-right {
+                    cursor: url('img/right-arrow.svg'), e-resize !important;
+                    // cursor: e-resize;
+                }
+
+                &.selected.mouse-left {
+                    cursor: url('img/left-arrow.svg'), w-resize !important;
+                    // cursor: w-resize;
+                }
+
+                &.selected + img {
+                    cursor: url('img/right-arrow.svg'), w-resize !important;
+                }
+
+                &::before {
+                    position: absolute;
+                    content: ' ';
+                    width: 50%;
+                    height: 100%;
+                    left: 0;
+                    cursor: pointer;
+                    z-index: 5;
+                }
+            }
+        }
+    }
+}

@@ -1,6 +1,19 @@
+@mixin spanTransition {
+    transition-property: all;
+    transition-duration: .4s;
+    transition-timing-function: ease;
+
+    @for $i from 1 through 100 {
+        &:nth-child(#{$i}) {
+            transition-delay: calc(.05s * #{$i});
+        }
+    }
+}
+
 body {
     position: absolute;
     height: 100vh;
+    overflow-x: hidden;
     width: 100vw;
     top: 0;
     left: 0;
@@ -14,45 +27,113 @@ body {
         z-index: -1;
         top: 0;
         left: 0;
-        transition: all .8s;
+        transition-property: all;
+        transition-duration: 1s;
         transition-timing-function: cubic-bezier(0.000, 1.085, 0.795, 1.000);
     }
-    &.home {
-        &::before {
-            transform: scale(2) rotate(-20deg) translateY(-50vh);
+    &.home::before {
+        transform: scale(2) rotate(-15deg) translateY(-45vh);
+    }
+    &.stories::before {
+        transform: scale(2) rotate(10deg) translateX(50vw);   
+    }
+    &.story::before {
+        transform: scale(1.2) rotate(6deg) translateY(-10vh);      
+    }
+
+
+    &:not(.home) {
+        .name {
+            span {
+                opacity: 0;
+                transform: none !important;
+                pointer-events: none;
+            }
+        }
+        .mini span, nav a {
+            opacity: 1;
+            transform: translateY(0);
         }
     }
 }
 
+nav {
+    position: fixed;
+    bottom: 10vh;
+    left: 10vw;
+    h2.mini {
+        margin: 0;
+    }
+    h2 span, a {
+        opacity: 0;
+        transform: translateY(20px);
+        transform: translateY(20px);
+        display: inline-block;
+
+        @include spanTransition;
+    }
+
+}
+
 h1.name {
-    transition: all .8s;
+    transition-property: all;
+    transition-duration: .8s;
     transition-timing-function: cubic-bezier(0.000, 1.085, 0.795, 1.000);
     font-size: 10vw;
+    font-weight: $book;
     letter-spacing: 80px;
-    line-height: 200%;
     width: 75vw;
     position: relative;
-    left: 10vw;
+    left: 8vw;
+    top: 12vw;
+    box-sizing: border-box;
+    pointer-events: auto;
     // font-weight: 400;
 
     &:first-of-type {
         left: 18vw;
+        @include small {
+            top: 8vh;
+        }
     }
     &:last-of-type {
-        top: 25vh;
+        top: 45vh;
+        @include small {
+            top: 28vh;
+        }
     }
-
     @include small {
         width: 90vw;
+        left: 5vw;
+        letter-spacing: 40px;
+    }
+    @include medium {
+        width: 55vw;
+        left: 1vw;
+        letter-spacing: 60px;
+    }
+
+    span {
+        @include spanTransition;
     }
 }
 
 .home section {
     width: 300px;
     padding-right: 30px;
-    position: absolute;
+    position: fixed;
     bottom: 100px;
     right: 20px;
+
+    @include small {
+        width: 200px;
+        bottom: 20px;
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+
+    }
+
     ul {
         padding: 0;
         li {
@@ -64,4 +145,10 @@ h1.name {
         display: block;
         font-weight: bold;
     }
+}
+ui-view.main {
+    margin-left: 40vw;
+    position: relative;
+    margin-top: 30vh;
+    display: block;
 }

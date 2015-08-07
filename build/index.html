@@ -15,14 +15,21 @@
     <![endif]-->
   </head>
   <body ng-class="page">
-    <nav>
-      <h1 class="name rando">
-        Sam 
-      </h1>
-      <h1 class="name rando">
-        Garson
-      </h1>
+    <h1 class="name rando" switcher="true">
+      Sam 
+    </h1>
+    <h1 class="name rando" switcher="true">
+      Garson
+    </h1>
+    <nav ng-if="page">
+      <h2 class="mini">
+        <span>S</span><span>a</span><span>m</span>
+      </h2>
+      <h2 class="mini">
+        <span>G</span><span>a</span><span>r</span><span>s</span><span>o</span><span>n</span>
+      </h2>
+      <a ng-click="goBack()">&larr; Back</a>
     </nav>
-    <ui-view></ui-view>
+    <ui-view class="main"></ui-view>
   </body>
 </html>

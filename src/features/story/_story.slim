@@ -1,0 +1,11 @@
+h1.title.rando multiplier=".2" ng-bind="story.fragments['story.title'].value[0].text"
+img.cover ng-src="{{story.fragments['story.cover'].value.main.url}}"
+h6.date {{story.fragments['story.date'].value | amDateFormat : 'MMMM YYYY' }}
+p.standfirst {{story.fragments['story.standfirst'].value[0].text}}
+
+prismic-html.content fragment="story.fragments['story.content']"
+
+.next ng-if="nextStory"
+    h1.title {{nextStory.fragments['story.title'].value[0].text}}
+    img.cover ng-src="{{nextStory.fragments['story.cover'].value.main.url}}"
+    h6 {{nextStory.fragments['story.date'].value | amDateFormat : 'MMMM YYYY' }}
