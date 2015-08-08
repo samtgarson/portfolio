@@ -93,6 +93,28 @@ ol.stories-list {
             margin-top: 100px;
         }
 
+        .quote {
+            font-size: 2em;
+            line-height: 1.6em;
+            padding-right: 30%;
+            position: relative;
+
+            &::before {
+                content: "\201C";
+                left: -30px;
+                margin-top: 14px;
+                font-size: 1.8em;
+                position: absolute;
+            }
+
+            &::after {
+                content: "\201D";
+                font-size: 1.8em;
+                position: absolute;
+                margin-top: 14px;
+            }
+        }
+
         .gallery-wrapper {
             max-width: 100%;
             margin: 100px 0;
@@ -100,7 +122,8 @@ ol.stories-list {
             .gallery {
                 width: 1000%;
                 height: auto;
-                transition: margin .3s ease;
+                transition: margin .3s;
+                transition-timing-function: cubic-bezier(0.000, 1.085, 0.795, 1.000);
             }
             img {
                 display: inline-block;
@@ -111,22 +134,30 @@ ol.stories-list {
                 display: inline-block;
                 cursor: url('img/left-arrow.svg'), w-resize;
                 transition: opacity 1s ease;
+                max-width: none;
+
+                &:first-child {
+                    max-width: 650px;
+                }
 
                 &.selected {
                     opacity: 1;
                 }
 
-                &.selected.mouse-right {
+                &.selected.mouse-right:not(:last-child) {
                     cursor: url('img/right-arrow.svg'), e-resize !important;
                     // cursor: e-resize;
                 }
 
-                &.selected.mouse-left {
+                &.selected.mouse-left:not(:first-child) {
                     cursor: url('img/left-arrow.svg'), w-resize !important;
-                    // cursor: w-resize;
                 }
 
-                &.selected + img {
+                &.selected.mouse-left:first-child, &.selected.mouse-right:last-child {
+                    cursor: default !important;
+                }
+
+                &.selected ~ img {
                     cursor: url('img/right-arrow.svg'), w-resize !important;
                 }
 

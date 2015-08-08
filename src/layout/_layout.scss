@@ -61,6 +61,8 @@ nav {
     position: fixed;
     bottom: 10vh;
     left: 10vw;
+    z-index: 5;
+    
     h2.mini {
         margin: 0;
     }
@@ -85,7 +87,7 @@ h1.name {
     width: 75vw;
     position: relative;
     left: 8vw;
-    top: 12vw;
+    top: 9vw;
     box-sizing: border-box;
     pointer-events: auto;
     // font-weight: 400;
@@ -97,7 +99,7 @@ h1.name {
         }
     }
     &:last-of-type {
-        top: 45vh;
+        top: 50vh;
         @include small {
             top: 28vh;
         }

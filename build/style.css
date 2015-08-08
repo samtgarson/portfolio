@@ -956,7 +956,8 @@ body {
 nav {
   position: fixed;
   bottom: 10vh;
-  left: 10vw; }
+  left: 10vw;
+  z-index: 5; }
   nav h2.mini {
     margin: 0; }
   nav h2 span, nav a {
@@ -1180,7 +1181,7 @@ h1.name {
   width: 75vw;
   position: relative;
   left: 8vw;
-  top: 12vw;
+  top: 9vw;
   box-sizing: border-box;
   pointer-events: auto; }
   h1.name:first-of-type {
@@ -1189,7 +1190,7 @@ h1.name {
       h1.name:first-of-type {
         top: 8vh; } }
   h1.name:last-of-type {
-    top: 45vh; }
+    top: 50vh; }
     @media only screen and (max-width: 650px) {
       h1.name:last-of-type {
         top: 28vh; } }
@@ -1709,6 +1710,22 @@ ol.stories-list {
     font-size: 1.2em;
     font-weight: 500;
     margin-top: 100px; }
+  .story .content .quote {
+    font-size: 2em;
+    line-height: 1.6em;
+    padding-right: 30%;
+    position: relative; }
+    .story .content .quote::before {
+      content: "\201C";
+      left: -30px;
+      margin-top: 14px;
+      font-size: 1.8em;
+      position: absolute; }
+    .story .content .quote::after {
+      content: "\201D";
+      font-size: 1.8em;
+      position: absolute;
+      margin-top: 14px; }
   .story .content .gallery-wrapper {
     max-width: 100%;
     margin: 100px 0;
@@ -1716,7 +1733,8 @@ ol.stories-list {
     .story .content .gallery-wrapper .gallery {
       width: 1000%;
       height: auto;
-      transition: margin 0.3s ease; }
+      transition: margin 0.3s;
+      transition-timing-function: cubic-bezier(0, 1.085, 0.795, 1); }
     .story .content .gallery-wrapper img {
       display: inline-block;
       height: 100%;
@@ -1725,14 +1743,19 @@ ol.stories-list {
       opacity: 0.4;
       display: inline-block;
       cursor: url('img/left-arrow.svg'), w-resize;
-      transition: opacity 1s ease; }
+      transition: opacity 1s ease;
+      max-width: none; }
+      .story .content .gallery-wrapper img:first-child {
+        max-width: 650px; }
       .story .content .gallery-wrapper img.selected {
         opacity: 1; }
-      .story .content .gallery-wrapper img.selected.mouse-right {
+      .story .content .gallery-wrapper img.selected.mouse-right:not(:last-child) {
         cursor: url('img/right-arrow.svg'), e-resize !important; }
-      .story .content .gallery-wrapper img.selected.mouse-left {
+      .story .content .gallery-wrapper img.selected.mouse-left:not(:first-child) {
         cursor: url('img/left-arrow.svg'), w-resize !important; }
-      .story .content .gallery-wrapper img.selected + img {
+      .story .content .gallery-wrapper img.selected.mouse-left:first-child, .story .content .gallery-wrapper img.selected.mouse-right:last-child {
+        cursor: default !important; }
+      .story .content .gallery-wrapper img.selected ~ img {
         cursor: url('img/right-arrow.svg'), w-resize !important; }
       .story .content .gallery-wrapper img::before {
         position: absolute;
