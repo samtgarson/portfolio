@@ -31,14 +31,31 @@ angular.module('app', [
         $logProvider.debugEnabled(true);
     })
 
-    .controller('appController', function ($scope, $filter, $state, $previousState) {
+    .controller('appController', function ($scope, $filter, $timeout, $state, $urlRouter) {
         $scope.hello = 'hello world';
+        $scope.show = true;
         
         $scope.title = "Sam Garson";
+        var bypass = false;
+        $scope.$on('$stateChangeStart', function(e, toState, toStateParams) {
+            if (!bypass) {
+                $scope.show = false;
+                e.preventDefault();
+                $timeout(function(){
+                    bypass = true;
+                    $state.go(toState, toStateParams);
+                }, 300);
+            } else return;
+        });
         $scope.$on('$stateChangeSuccess', function(e, toState) {
+            bypass = false;
             var split = toState.name.split('.').length > 1?toState.name.split('.')[1]:toState.name;
             $scope.title = $filter('titlecase')(split) + ' | Sam Garson';
             $scope.page = split.toLowerCase();
+
+            $timeout(function(){
+                $scope.show = true;
+            }, 600);
         });
 
         $scope.$on('$stateChangeError', function(e, toState, toParams, fromState, fromParams, error) {

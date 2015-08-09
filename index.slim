@@ -16,6 +16,7 @@ html lang="en" ng-app="app" ng-controller="appController"
     body ng-class="page"
         h1.name.rando switcher="true" Sam 
         h1.name.rando switcher="true" Garson
+        h2.name.rando ui-sref="home" multiplier=".15" Sam Garson
         nav ng-if="page"
             h2.mini
                 span S
@@ -29,4 +30,4 @@ html lang="en" ng-app="app" ng-controller="appController"
                 span o
                 span n
             a ng-click="goBack()" &larr; Back
-        ui-view.main
+        ui-view.main ng-class="{'show': show}"

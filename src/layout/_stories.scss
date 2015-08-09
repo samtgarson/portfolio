@@ -1,9 +1,11 @@
 ol.stories-list {
     list-style-type: none;
     width: 400px;
+    box-sizing: border-box;
 
     & > li {
         counter-increment: step-counter;
+        box-sizing: border-box;
         position: relative;
 
         &:hover {
@@ -44,6 +46,29 @@ ol.stories-list {
             font-weight: $light;
         }
     }
+    @include small {
+        padding-top: 40px;
+        width: auto;
+
+        li {
+            max-width: 100%;
+
+            &::before {
+                display: none;
+            }
+
+            h1.title {
+                display: inline;
+                width: 100%;
+                font-size: 1.8em;
+            }
+
+            img.cover {
+                height: 150px;
+                top: -40px;
+            }
+        }
+    }
 }
 .story {
     h1.title {
@@ -65,7 +90,7 @@ ol.stories-list {
         position: absolute;
         height: 450px;
         opacity: .3;
-        left: -25vh;
+        left: -20vw;
         top: -15vh;
         z-index: -1;
     }
@@ -115,12 +140,20 @@ ol.stories-list {
             }
         }
 
+        ul, ol {
+            padding: 0;
+        }
+
         .gallery-wrapper {
             max-width: 100%;
             margin: 100px 0;
             overflow-x: visible;
+
+            @include small {
+                margin: 40px 0;
+            }
             .gallery {
-                width: 1000%;
+                width: 5000%;
                 height: auto;
                 transition: margin .3s;
                 transition-timing-function: cubic-bezier(0.000, 1.085, 0.795, 1.000);
@@ -169,6 +202,73 @@ ol.stories-list {
                     left: 0;
                     cursor: pointer;
                     z-index: 5;
+                }
+            }
+        }
+        .gallery-arrows {
+            a {
+                cursor: pointer;
+            }
+            .disabled {
+                opacity: .3;
+                cursor: default;
+                pointer-events: none;
+            }
+            .gallery-count {
+                margin-left: 10px;
+            }
+            @include small {
+                font-size: 1.6em;
+                line-height: 3em;
+            }
+        }
+    }
+
+    @include small {
+        h1.title {
+            top: 4vh;
+            width: 100%;
+            left: 0;
+            line-height: 2.5em;
+            font-size: 30px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        img.cover {
+            height: 30vh;
+            top: 16vh;
+            z-index: 0;
+            left: 50vw;
+            transform: translateX(-50%);
+        }
+        h6.date {
+            padding-top: 25vh;
+        }
+
+        .standfirst {
+            margin-bottom: 30px;
+        }
+
+        .content {
+            .quote {
+                padding: 0;
+
+                &::before {
+                    left: -21px;
+                }
+                &::before, &::after {
+                    margin-top: 12px;
+                }
+            }
+            h1 {
+                margin-top: 30px;
+            }
+            .gallery {
+                img:first-child {
+                    max-width: 70vw;
+                }
+                img {
+                    margin-right: 32px;
                 }
             }
         }

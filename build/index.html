@@ -21,6 +21,9 @@
     <h1 class="name rando" switcher="true">
       Garson
     </h1>
+    <h2 class="name rando" multiplier=".15" ui-sref="home">
+      Sam Garson
+    </h2>
     <nav ng-if="page">
       <h2 class="mini">
         <span>S</span><span>a</span><span>m</span>
@@ -30,6 +33,6 @@
       </h2>
       <a ng-click="goBack()">&larr; Back</a>
     </nav>
-    <ui-view class="main"></ui-view>
+    <ui-view class="main" ng-class="{&#39;show&#39;: show}"></ui-view>
   </body>
 </html>

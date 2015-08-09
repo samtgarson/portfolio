@@ -26,8 +26,12 @@ a {
   text-decoration: none;   
 }
 
-.clickable, [ui-sref], [ng-click] {
+.clickable, [ui-sref], [ng-click], [href] {
     cursor: pointer;
+
+    &:active {
+      text-decoration: underline;
+    }
 }
 
 .right {

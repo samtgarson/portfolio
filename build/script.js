@@ -25626,7 +25626,7 @@ angular.module("prismic.io", []).provider("Prismic", function() {
 })();
 angular.module("templates", []).run([ "$templateCache", function($templateCache) {
     $templateCache.put("features/_feature/_feature.html", "\n");
-    $templateCache.put("features/home/_home.html", '<section>\n  <b>I turn great ideas into great products.</b>\n  <p>\n    You’ve probably seen some.\n  </p>\n  <ul>\n    <li>\n      British Airways \n    </li>\n    <li>\n      Converse \n    </li>\n    <li>\n      Cannes Lions \n    </li>\n    <li>\n      Protein \n    </li>\n    <li>\n      Microsoft\n    </li>\n  </ul>\n  <a ui-sref="stories">Case studies &rarr;</a><a href="mailto:samtgarson@gmail.com">samtgarson@gmail.com &rarr;</a>\n</section>\n');
+    $templateCache.put("features/home/_home.html", '<section>\n  <b>I turn great ideas into great products.</b>\n  <p>\n    You’ve probably seen some.\n  </p>\n  <ul>\n    <li>\n      British Airways \n    </li>\n    <li>\n      Converse \n    </li>\n    <li>\n      Cannes Lions \n    </li>\n    <li>\n      Protein \n    </li>\n    <li>\n      Microsoft\n    </li>\n  </ul>\n  <p>\n    <a ui-sref="stories">Case studies &rarr;</a>\n  </p>\n  <p>\n    <a href="mailto:samtgarson@gmail.com">samtgarson@gmail.com &rarr;</a>\n  </p>\n</section>\n');
     $templateCache.put("features/stories/_stories.html", '<ol class="stories-list">\n  <li ng-repeat="story in stories" ui-sref="story({id: story.id})">\n    <h1 class="title">\n      {{story.fragments[\'story.title\'].value[0].text}}\n    </h1>\n    <img class="cover" ng-src="{{story.fragments[&#39;story.cover&#39;].value.main.url}}" />\n    <h6>\n      {{story.fragments[\'story.date\'].value | amDateFormat : \'MMMM YYYY\' }}\n    </h6>\n  </li>\n</ol>\n');
     $templateCache.put("features/story/_story.html", '<h1 class="title rando" multiplier=".2" ng-bind="story.fragments[&#39;story.title&#39;].value[0].text"></h1>\n<img class="cover" ng-src="{{story.fragments[&#39;story.cover&#39;].value.main.url}}" />\n<h6 class="date">\n  {{story.fragments[\'story.date\'].value | amDateFormat : \'MMMM YYYY\' }}\n</h6>\n<p class="standfirst">\n  {{story.fragments[\'story.standfirst\'].value[0].text}}\n</p>\n<prismic-html class="content" fragment="story.fragments[&#39;story.content&#39;]"></prismic-html>\n<div class="next" ng-if="nextStory">\n  <h1 class="title">\n    {{nextStory.fragments[\'story.title\'].value[0].text}}\n  </h1>\n  <img class="cover" ng-src="{{nextStory.fragments[&#39;story.cover&#39;].value.main.url}}" />\n  <h6>\n    {{nextStory.fragments[\'story.date\'].value | amDateFormat : \'MMMM YYYY\' }}\n  </h6>\n</div>\n');
     $templateCache.put("features/talk/_talk.html", "\n");
@@ -25716,14 +25716,23 @@ angular.module("filters", []).filter("titlecase", function() {
                         ratio = this.height / this.width;
                         $gal.height(w * ratio);
                     });
+                    var left = $("<a class='gallery-left'>&larr;</a>"), right = $("<a class='gallery-right'>&rarr;</a>"), count = $('<span class="gallery-count">');
+                    left.on("click", function() {
+                        advance(1);
+                    });
+                    right.on("click", function() {
+                        advance(-1);
+                    });
+                    $('<div class="gallery-arrows">').append([ left, right, count ]).insertAfter($gal);
+                    checkArrows();
                     $gal.children("img").on("click", function(e) {
                         var $img = $(this), selected = $img.hasClass("selected") ? $img : $img.siblings(".selected"), pWidth = selected.innerWidth();
                         if ($img.hasClass("selected")) {
                             var pOffset = $img.offset(), x = e.pageX - pOffset.left;
                             if (pWidth / 2 > x) {
-                                if ($img.is(":not(:first-child)")) advance($img.prev().innerWidth());
-                            } else if ($img.is(":not(:last-child)")) advance(pWidth * -1);
-                        } else if ($img.isBefore(selected)) advance(selected.prev().innerWidth()); else advance(pWidth * -1);
+                                if ($img.is(":not(:first-child)")) advance(1);
+                            } else if ($img.is(":not(:last-child)")) advance(-1);
+                        } else if ($img.isBefore(selected)) advance(1); else advance(-1);
                     }).on("mousemove mouseenter", function(e) {
                         var $img = $(this);
                         if ($img.hasClass("selected")) {
@@ -25734,18 +25743,25 @@ angular.module("filters", []).filter("titlecase", function() {
                             $img.removeClass("mouse-left mouse-right").addClass("mouse-" + dir);
                         }
                     });
-                });
-            }
-            function advance(dist) {
-                if (dist) {
-                    dist = dist > 0 ? dist + 40 : dist - 40;
-                    var $gal = $(".gallery"), trans = parseInt($gal.css("marginLeft")), $img = $gal.children(".selected");
-                    if (trans + dist <= 0) {
-                        $gal.css("marginLeft", trans + dist);
-                        $img.removeClass("selected");
-                        if (dist < 0) $img.next().addClass("selected"); else $img.prev().addClass("selected");
+                    function advance(dir) {
+                        if (dir) {
+                            var cur = parseInt($gal.css("marginLeft")), $img = $gal.children(".selected");
+                            dist = dir > 0 ? $img.prev().length ? $img.prev().offset().left : false : $img.next().length ? $img.next().offset().left : false;
+                            if (dist) {
+                                $gal.css("marginLeft", (dist - $gal.offset().left) * -1);
+                                $img.removeClass("selected");
+                                if (dir > 0) $img.prev().addClass("selected"); else $img.next().addClass("selected");
+                                checkArrows();
+                            }
+                        }
                     }
-                }
+                    function checkArrows() {
+                        $gal.next(".gallery-arrows").find(".gallery-left, .gallery-right").removeClass("disabled");
+                        if ($gal.find(".selected").is(":first-child")) $(".gallery-left").addClass("disabled"); else if ($gal.find(".selected").is(":last-child")) $(".gallery-right").addClass("disabled");
+                        var total = $gal.find("img").length, index = $gal.find(".selected").index() + 1;
+                        $gal.next(".gallery-arrows").find("span").text(index + "/" + total);
+                    }
+                });
             }
             (function($) {
                 $.fn.isAfter = function(sel) {
@@ -25861,13 +25877,29 @@ angular.module("app", [ "ui.router", "ct.ui.router.extras", "ngSanitize", "ngCac
         return "stories/" + doc.id;
     });
     $logProvider.debugEnabled(true);
-}).controller("appController", function($scope, $filter, $state, $previousState) {
+}).controller("appController", function($scope, $filter, $timeout, $state, $urlRouter) {
     $scope.hello = "hello world";
+    $scope.show = true;
     $scope.title = "Sam Garson";
+    var bypass = false;
+    $scope.$on("$stateChangeStart", function(e, toState, toStateParams) {
+        if (!bypass) {
+            $scope.show = false;
+            e.preventDefault();
+            $timeout(function() {
+                bypass = true;
+                $state.go(toState, toStateParams);
+            }, 300);
+        } else return;
+    });
     $scope.$on("$stateChangeSuccess", function(e, toState) {
+        bypass = false;
         var split = toState.name.split(".").length > 1 ? toState.name.split(".")[1] : toState.name;
         $scope.title = $filter("titlecase")(split) + " | Sam Garson";
         $scope.page = split.toLowerCase();
+        $timeout(function() {
+            $scope.show = true;
+        }, 600);
     });
     $scope.$on("$stateChangeError", function(e, toState, toParams, fromState, fromParams, error) {
         console.log(error);

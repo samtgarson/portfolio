@@ -91,12 +91,28 @@ angular.module('filters', [])
                         var $gal = $(this),
                             src = $gal.children(':first').attr('src'), ratio,
                             w = parseInt($gal.children('img:first').addClass('selected').css('maxWidth'));
+
                         $("<img/>") // Make in memory copy of image to avoid css issues
                             .attr("src", src)
                             .load(function() {
                                 ratio = this.height / this.width;
                                 $gal.height(w * ratio);
                             });
+
+                        var left = $("<a class='gallery-left'>&larr;</a>"),
+                            right = $("<a class='gallery-right'>&rarr;</a>"),
+                            count = $('<span class="gallery-count">');
+
+                        left.on('click', function() {
+                            advance(1);
+                        });
+                        right.on('click', function() {
+                            advance(-1);
+                        });
+
+                        $('<div class="gallery-arrows">').append([left, right, count]).insertAfter($gal);
+                        checkArrows();
+
                         $gal.children('img').on('click', function(e){
                             var $img = $(this), selected = $img.hasClass('selected')?$img:$img.siblings('.selected'), 
                                 pWidth = selected.innerWidth();
@@ -105,10 +121,10 @@ angular.module('filters', [])
                                 var pOffset = $img.offset(),
                                     x = e.pageX - pOffset.left;
                                 if (pWidth/2 > x) {
-                                    if ($img.is(':not(:first-child)')) advance($img.prev().innerWidth());
-                                } else if ($img.is(':not(:last-child)')) advance(pWidth * -1);
-                            } else if ($img.isBefore(selected)) advance(selected.prev().innerWidth());
-                            else advance(pWidth * -1); 
+                                    if ($img.is(':not(:first-child)')) advance(1);
+                                } else if ($img.is(':not(:last-child)')) advance(-1);
+                            } else if ($img.isBefore(selected)) advance(1);
+                            else advance(-1); 
                         }).on('mousemove mouseenter', function (e){
                             var $img = $(this); 
 
@@ -125,22 +141,34 @@ angular.module('filters', [])
                             }
                         });
 
-                    });
-                }
-
-                function advance(dist) {
-                    if (dist) {
-                        dist = dist>0?dist + 40:dist-40;
-                        var $gal = $('.gallery'),
-                            trans = parseInt($gal.css('marginLeft')),
-                            $img = $gal.children('.selected');
-                        if (trans + dist <= 0) {
-                            $gal.css('marginLeft', trans + dist);
-                            $img.removeClass('selected');
-                            if (dist<0) $img.next().addClass('selected');
-                            else $img.prev().addClass('selected');
+                        function advance(dir) {
+                            if (dir) {
+                                var cur = parseInt($gal.css('marginLeft')),
+                                    $img = $gal.children('.selected');
+                                dist = dir > 0 ? 
+                                    $img.prev().length?$img.prev().offset().left : false :
+                                    $img.next().length?$img.next().offset().left : false;
+                                if (dist) {
+                                    $gal.css('marginLeft', (dist - $gal.offset().left) * -1);
+                                    $img.removeClass('selected');
+                                    if (dir>0) $img.prev().addClass('selected');
+                                    else $img.next().addClass('selected');
+                                    checkArrows();
+                                }
+                            }
                         }
-                    }
+
+                        function checkArrows () {
+                            $gal.next('.gallery-arrows').find('.gallery-left, .gallery-right').removeClass('disabled');
+                            if ($gal.find('.selected').is(':first-child')) $('.gallery-left').addClass('disabled');
+                            else if ($gal.find('.selected').is(':last-child')) $('.gallery-right').addClass('disabled');
+
+                            var total = $gal.find('img').length,
+                                index = $gal.find('.selected').index() + 1;
+                            $gal.next('.gallery-arrows').find('span').text(index + '/' + total);
+                        }
+
+                    });
                 }
 
                 (function($) {

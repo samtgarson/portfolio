@@ -43,7 +43,7 @@ body {
 
 
     &:not(.home) {
-        .name {
+        h1.name {
             span {
                 opacity: 0;
                 transform: none !important;
@@ -62,7 +62,7 @@ nav {
     bottom: 10vh;
     left: 10vw;
     z-index: 5;
-    
+
     h2.mini {
         margin: 0;
     }
@@ -70,9 +70,13 @@ nav {
         opacity: 0;
         transform: translateY(20px);
         transform: translateY(20px);
-        display: inline-block;
+        // display: inline-block;
 
         @include spanTransition;
+    }
+
+    @include small {
+        display: none;
     }
 
 }
@@ -84,7 +88,7 @@ h1.name {
     font-size: 10vw;
     font-weight: $book;
     letter-spacing: 80px;
-    width: 75vw;
+    width: calc(92vw - 350px);
     position: relative;
     left: 8vw;
     top: 9vw;
@@ -94,29 +98,39 @@ h1.name {
 
     &:first-of-type {
         left: 18vw;
-        @include small {
-            top: 8vh;
-        }
     }
     &:last-of-type {
         top: 50vh;
-        @include small {
-            top: 28vh;
-        }
-    }
-    @include small {
-        width: 90vw;
-        left: 5vw;
-        letter-spacing: 40px;
     }
     @include medium {
         width: 55vw;
         left: 1vw;
         letter-spacing: 60px;
     }
+    @include small {
+        display: none;
+    }
 
     span {
         @include spanTransition;
+    }
+}
+h2.name {
+    display: none;
+    @include small {
+        display: block;
+        z-index: 10;
+        position: fixed;
+        width: 100%;
+        top: 20px;
+        text-align: center;
+        letter-spacing: 15px;
+        font-weight: $book;
+        height: 10vh;
+        font-size: 1em;
+        span {
+            @include spanTransition;
+        }
     }
 }
 
@@ -144,7 +158,6 @@ h1.name {
     }
 
     a {
-        display: block;
         font-weight: bold;
     }
 }
@@ -153,4 +166,36 @@ ui-view.main {
     position: relative;
     margin-top: 30vh;
     display: block;
+    box-sizing: border-box;
+    opacity: 0;
+    padding-top: 20px;
+    transition: opacity .6s;
+    transition-timing-function: cubic-bezier(0.000, 1.085, 0.795, 1.000);
+
+    & > * {
+        transform: translateY(20px);
+        transition: transform .6s;
+        transition-timing-function: cubic-bezier(0.000, 1.085, 0.795, 1.000);
+    }
+
+    &.show {
+        opacity: 1;
+        padding-top: 0;
+
+        @include small {
+            padding-top: 55px;
+        }
+
+        & > * {
+            transform: translateY(0px);
+        }
+    }
+
+    @include small {
+        margin: 0;
+        padding: 32px;
+        padding-top: 75px;
+        width: 100%;
+        overflow-x: hidden;
+    }
 }
