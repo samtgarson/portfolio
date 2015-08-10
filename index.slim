@@ -4,7 +4,7 @@ html lang="en" ng-app="app" ng-controller="appController"
         meta charset="utf-8"
         / base href="/"
         javascript:
-            var p = location.pathname == '/portfolio'?'/portfolio':'/';
+            var p = window.location.pathname == '/portfolio' | window.location.pathname == '/portfolio/' ? '/portfolio/' : '/';
             document.write("<base href='" + p + "' />");
         title ng-bind="title" 
         meta content="" name="description"
