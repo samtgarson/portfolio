@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <script type="text/javascript">
-      var p = location.pathname == '/portfolio'?'/portfolio':'/';
+      var p = window.location.pathname == '/portfolio' | window.location.pathname == '/portfolio/' ? '/portfolio/' : '/';
       document.write("<base href='" + p + "' />");
     </script>
     <title ng-bind="title"></title>
