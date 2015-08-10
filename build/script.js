@@ -25626,10 +25626,10 @@ angular.module("prismic.io", []).provider("Prismic", function() {
 })();
 angular.module("templates", []).run([ "$templateCache", function($templateCache) {
     $templateCache.put("features/_feature/_feature.html", "\n");
-    $templateCache.put("features/home/_home.html", '<section>\n  <b>I turn great ideas into great products.</b>\n  <p>\n    You’ve probably seen some.\n  </p>\n  <ul>\n    <li>\n      British Airways \n    </li>\n    <li>\n      Converse \n    </li>\n    <li>\n      Cannes Lions \n    </li>\n    <li>\n      Protein \n    </li>\n    <li>\n      Microsoft\n    </li>\n  </ul>\n  <p>\n    <a ui-sref="stories">Case studies &rarr;</a>\n  </p>\n  <p>\n    <a href="mailto:samtgarson@gmail.com">samtgarson@gmail.com &rarr;</a>\n  </p>\n</section>\n');
+    $templateCache.put("features/home/_home.html", '<section>\n  <b>Sam turns great ideas into great products.</b>\n  <p>\n    You’ve probably seen some.\n  </p>\n  <ul>\n    <li>\n      British Airways \n    </li>\n    <li>\n      Converse \n    </li>\n    <li>\n      Cannes Lions \n    </li>\n    <li>\n      Protein \n    </li>\n    <li>\n      Microsoft\n    </li>\n  </ul>\n  <a ui-sref="stories">Case studies &rarr;</a><br /><a ui-sref="talk">About &rarr;</a><br /><a href="mailto:samtgarson@gmail.com">samtgarson@gmail.com &rarr;</a>\n</section>\n');
     $templateCache.put("features/stories/_stories.html", '<ol class="stories-list">\n  <li ng-repeat="story in stories" ui-sref="story({id: story.id})">\n    <h1 class="title">\n      {{story.fragments[\'story.title\'].value[0].text}}\n    </h1>\n    <img class="cover" ng-src="{{story.fragments[&#39;story.cover&#39;].value.main.url}}" />\n    <h6>\n      {{story.fragments[\'story.date\'].value | amDateFormat : \'MMMM YYYY\' }}\n    </h6>\n  </li>\n</ol>\n');
     $templateCache.put("features/story/_story.html", '<h1 class="title rando" multiplier=".2" ng-bind="story.fragments[&#39;story.title&#39;].value[0].text"></h1>\n<img class="cover" ng-src="{{story.fragments[&#39;story.cover&#39;].value.main.url}}" />\n<h6 class="date">\n  {{story.fragments[\'story.date\'].value | amDateFormat : \'MMMM YYYY\' }}\n</h6>\n<p class="standfirst">\n  {{story.fragments[\'story.standfirst\'].value[0].text}}\n</p>\n<prismic-html class="content" fragment="story.fragments[&#39;story.content&#39;]"></prismic-html>\n<div class="next" ng-if="nextStory">\n  <h1 class="title">\n    {{nextStory.fragments[\'story.title\'].value[0].text}}\n  </h1>\n  <img class="cover" ng-src="{{nextStory.fragments[&#39;story.cover&#39;].value.main.url}}" />\n  <h6>\n    {{nextStory.fragments[\'story.date\'].value | amDateFormat : \'MMMM YYYY\' }}\n  </h6>\n</div>\n');
-    $templateCache.put("features/talk/_talk.html", "\n");
+    $templateCache.put("features/talk/_talk.html", '<img class="face" src="img/face.png" />\n<section>\n  <h1 class="heart rando" multiplier=".3">\n    Sam &#10084; product\n  </h1>\n  <b>I\'m an experience designer and full stack web developer living in London.</b>\n  <p>\n    I\'m currently helping a few brands and startups build products and engage their audiences.\n  </p>\n  <p>\n    I\'m available to hire, full-time or freelance—always looking to work with passionate people shipping awesome product. \n  </p>\n  <p>\n    Take a look at some of my <a ui-sref="stories">work &rarr;</a>\n  </p>\n  <p>\n    Or <a href="mailto:samtgarson@gmail.com">get in touch &rarr;</a>\n  </p>\n  <p>\n    Yours, <b>Sam Garson</b>\n  </p>\n  <a class="back" ui-sref="home">&larr; Back</a>\n</section>\n');
 } ]);
 angular.module("filters", []).filter("titlecase", function() {
     return function(s) {
@@ -25842,6 +25842,10 @@ angular.module("states", []).run(function($rootScope, $state) {}).config(functio
                 return Prismic.query('[[:d = at(document.type, "story")]][my.story.date desc]');
             }
         }
+    }).state("talk", {
+        url: "/about",
+        templateUrl: templater("talk"),
+        controller: "talkController"
     }).state("story", {
         url: "/:id",
         templateUrl: templater("story"),
@@ -25851,10 +25855,6 @@ angular.module("states", []).run(function($rootScope, $state) {}).config(functio
                 return Prismic.query('[[:d = at(document.type, "story")]][my.story.date desc]');
             }
         }
-    }).state("talk", {
-        url: "/talk",
-        templateUrl: templater("talk"),
-        controller: "talkController"
     });
 });
 angular.module("<%= name%>", []).controller("<%= name%>Controller", function($scope) {});
@@ -25881,7 +25881,7 @@ angular.module("app", [ "ui.router", "ct.ui.router.extras", "ngSanitize", "ngCac
     $scope.hello = "hello world";
     $scope.show = true;
     $scope.title = "Sam Garson";
-    var bypass = false;
+    var bypass = true;
     $scope.$on("$stateChangeStart", function(e, toState, toStateParams) {
         if (!bypass) {
             $scope.show = false;
@@ -25890,10 +25890,9 @@ angular.module("app", [ "ui.router", "ct.ui.router.extras", "ngSanitize", "ngCac
                 bypass = true;
                 $state.go(toState, toStateParams);
             }, 300);
-        } else return;
+        } else bypass = false;
     });
     $scope.$on("$stateChangeSuccess", function(e, toState) {
-        bypass = false;
         var split = toState.name.split(".").length > 1 ? toState.name.split(".")[1] : toState.name;
         $scope.title = $filter("titlecase")(split) + " | Sam Garson";
         $scope.page = split.toLowerCase();

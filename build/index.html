@@ -2,7 +2,10 @@
 <html lang="en" ng-app="app" ng-controller="appController">
   <head>
     <meta charset="utf-8" />
-    <base href="/" />
+    <script type="text/javascript">
+      var p = location.pathname == '/portfolio'?'/portfolio':'/';
+      document.write("<base href='" + p + "' />");
+    </script>
     <title ng-bind="title"></title>
     <meta content="" name="description" />
     <meta content="" name="author" />

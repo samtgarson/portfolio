@@ -55,6 +55,15 @@ body {
             transform: translateY(0);
         }
     }
+    &.talk {
+        &::before {
+            transform: scale(2) rotate(-10deg) translateX(-45vw);      
+        }
+        .mini span, nav a {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+    }
 }
 
 nav {
@@ -68,7 +77,6 @@ nav {
     }
     h2 span, a {
         opacity: 0;
-        transform: translateY(20px);
         transform: translateY(20px);
         // display: inline-block;
 
@@ -134,12 +142,12 @@ h2.name {
     }
 }
 
-.home section {
+.home section, .talk section {
     width: 300px;
     padding-right: 30px;
     position: fixed;
     bottom: 100px;
-    right: 20px;
+    right: 10vw;
 
     @include small {
         width: 200px;
@@ -197,5 +205,52 @@ ui-view.main {
         padding-top: 75px;
         width: 100%;
         overflow-x: hidden;
+    }
+}
+.talk {
+    section {
+        width: 30vw;
+        right: auto;
+        left: 50vw;
+        min-width: 400px;
+    }
+    img.face {
+        position: fixed;
+        height: 100vh;
+        bottom: 0;
+        left: 0;
+        opacity: .65;
+    }
+    .back {
+        font-weight: $light;
+    }
+    h1.heart {
+        text-align: center;
+        letter-spacing: 20px;
+        line-height: 2em;
+        position: relative;
+        height: 70px;
+        display: block;
+        font-size: 3em;
+        font-weight: $book;
+        margin-bottom: 240px;
+
+        span {
+            @include spanTransition;
+        }
+    }
+    @include small {
+        img.face {
+            opacity: .4;
+        }
+        h1.heart {
+            display: none;
+        }
+        section {
+            left: 5vw;
+            text-align: center;
+            min-width: auto;
+            width: 90vw;
+        }
     }
 }

@@ -36,7 +36,7 @@ angular.module('app', [
         $scope.show = true;
         
         $scope.title = "Sam Garson";
-        var bypass = false;
+        var bypass = true;
         $scope.$on('$stateChangeStart', function(e, toState, toStateParams) {
             if (!bypass) {
                 $scope.show = false;
@@ -45,10 +45,9 @@ angular.module('app', [
                     bypass = true;
                     $state.go(toState, toStateParams);
                 }, 300);
-            } else return;
+            } else bypass = false;
         });
         $scope.$on('$stateChangeSuccess', function(e, toState) {
-            bypass = false;
             var split = toState.name.split('.').length > 1?toState.name.split('.')[1]:toState.name;
             $scope.title = $filter('titlecase')(split) + ' | Sam Garson';
             $scope.page = split.toLowerCase();

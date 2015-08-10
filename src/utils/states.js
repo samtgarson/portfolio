@@ -54,6 +54,11 @@ angular.module('states', [])
                     }
                 },
             })
+            .state('talk', {
+                'url'               : '/about',
+                'templateUrl': templater('talk'), 
+                'controller': 'talkController'
+            })
             .state('story', {
                 'url'               : '/:id',
                 'templateUrl': templater('story'), 
@@ -63,10 +68,5 @@ angular.module('states', [])
                         return Prismic.query('[[:d = at(document.type, "story")]][my.story.date desc]');
                     }
                 }
-            })
-            .state('talk', {
-                'url'               : '/talk',
-                'templateUrl': templater('talk'), 
-                'controller': 'talkController'
             });
     });
