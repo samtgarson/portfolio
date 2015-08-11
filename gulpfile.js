@@ -38,7 +38,7 @@ gulp.task('browser-sync', function() {
 });
 // Generate slim templates
 gulp.task('tpl', function () {
-    gulp.src("src/**/*.slim")
+    gulp.src(["src/**/*.slim", "!src/index.slim"])
         .pipe($.plumber({
             errorHandler: $.notify.onError("<%= error.message %>")}))
         .pipe($.slim({
@@ -51,7 +51,7 @@ gulp.task('tpl', function () {
 
 // Generate index slim
 gulp.task('slim_index', function () {
-    gulp.src("index.slim")
+    gulp.src("src/index.slim")
         .pipe($.plumber({
             errorHandler: $.notify.onError("<%= error.message %>")}))
         .pipe($.slim({
@@ -127,16 +127,15 @@ gulp.task('sass:development', function () {
 gulp.task('default', ['connect', 'slim_index', 'sass:development', 'tpl', 'js:development', 'browser-sync'], function() {
     gulp.watch('./src/**/*.scss', ['sass:development']);
     gulp.watch('src/**/*.slim', ['tpl']);
-    gulp.watch('index.slim', ['slim_index']);
+    gulp.watch('src/index.slim', ['slim_index']);
     gulp.watch(jsFiles, ['js:development']);
 });
 
 // Build JS and SASS
 gulp.task('build', ['tpl', 'slim_index', 'js:build', 'sass:build'], function () {
-    gulp.src('./*')
-        .pipe($.git.add({args: '-A'}))
+    gulp.src(['./build/**/*', './src/**/*'])
         .pipe($.git.commit('BUILD'))
-        .pipe($.git.reset('HEAD'));
+        .pipe($.git.push());
 });
 
 // Create new feature with --name
