@@ -1928,24 +1928,24 @@ h2.name {
         h2.name span:nth-child(100) {
           transition-delay: calc(.05s * 100); } }
 
-.home section, .talk section {
+.home section, .about section {
   width: 300px;
   padding-right: 30px;
   position: fixed;
-  bottom: 100px;
+  bottom: 5vh;
   right: 10vw; }
   @media only screen and (max-width: 650px) {
-    .home section, .talk section {
+    .home section, .about section {
       width: 200px;
       bottom: 20px;
       left: 0;
       right: 0;
       margin: 0 auto; } }
-  .home section ul, .talk section ul {
+  .home section ul, .about section ul {
     padding: 0; }
-    .home section ul li, .talk section ul li {
+    .home section ul li, .about section ul li {
       list-style-type: none; }
-  .home section a, .talk section a {
+  .home section a, .about section a {
     font-weight: bold; }
 
 ui-view.main {
@@ -1981,20 +1981,24 @@ ui-view.main {
       width: 100%;
       overflow-x: hidden; } }
 
-.talk section {
+.about section {
   width: 30vw;
   right: auto;
   left: 50vw;
   min-width: 400px; }
-.talk img.face {
+.about img.face {
   position: fixed;
   height: 100vh;
   bottom: 0;
   left: 0;
   opacity: 0.65; }
-.talk .back {
-  font-weight: 300; }
-.talk h1.heart {
+.about .back {
+  font-weight: 300;
+  display: none; }
+  @media only screen and (max-width: 650px) {
+    .about .back {
+      display: block; } }
+.about h1.heart {
   text-align: center;
   letter-spacing: 20px;
   line-height: 2em;
@@ -2003,217 +2007,224 @@ ui-view.main {
   display: block;
   font-size: 3em;
   font-weight: 400;
-  margin-bottom: 240px; }
-  .talk h1.heart span {
+  margin-bottom: 340px; }
+  @media only screen and (min-width: 650px) and (max-width: 1150px) {
+    .about h1.heart {
+      font-size: 1.8em;
+      line-height: 2.2em;
+      margin-bottom: 110px; } }
+  .about h1.heart span {
     transition-property: all;
     transition-duration: 0.4s;
     transition-timing-function: ease; }
-    .talk h1.heart span:nth-child(1) {
+    .about h1.heart span:nth-child(1) {
       transition-delay: calc(.05s * 1); }
-    .talk h1.heart span:nth-child(2) {
+    .about h1.heart span:nth-child(2) {
       transition-delay: calc(.05s * 2); }
-    .talk h1.heart span:nth-child(3) {
+    .about h1.heart span:nth-child(3) {
       transition-delay: calc(.05s * 3); }
-    .talk h1.heart span:nth-child(4) {
+    .about h1.heart span:nth-child(4) {
       transition-delay: calc(.05s * 4); }
-    .talk h1.heart span:nth-child(5) {
+    .about h1.heart span:nth-child(5) {
       transition-delay: calc(.05s * 5); }
-    .talk h1.heart span:nth-child(6) {
+    .about h1.heart span:nth-child(6) {
       transition-delay: calc(.05s * 6); }
-    .talk h1.heart span:nth-child(7) {
+    .about h1.heart span:nth-child(7) {
       transition-delay: calc(.05s * 7); }
-    .talk h1.heart span:nth-child(8) {
+    .about h1.heart span:nth-child(8) {
       transition-delay: calc(.05s * 8); }
-    .talk h1.heart span:nth-child(9) {
+    .about h1.heart span:nth-child(9) {
       transition-delay: calc(.05s * 9); }
-    .talk h1.heart span:nth-child(10) {
+    .about h1.heart span:nth-child(10) {
       transition-delay: calc(.05s * 10); }
-    .talk h1.heart span:nth-child(11) {
+    .about h1.heart span:nth-child(11) {
       transition-delay: calc(.05s * 11); }
-    .talk h1.heart span:nth-child(12) {
+    .about h1.heart span:nth-child(12) {
       transition-delay: calc(.05s * 12); }
-    .talk h1.heart span:nth-child(13) {
+    .about h1.heart span:nth-child(13) {
       transition-delay: calc(.05s * 13); }
-    .talk h1.heart span:nth-child(14) {
+    .about h1.heart span:nth-child(14) {
       transition-delay: calc(.05s * 14); }
-    .talk h1.heart span:nth-child(15) {
+    .about h1.heart span:nth-child(15) {
       transition-delay: calc(.05s * 15); }
-    .talk h1.heart span:nth-child(16) {
+    .about h1.heart span:nth-child(16) {
       transition-delay: calc(.05s * 16); }
-    .talk h1.heart span:nth-child(17) {
+    .about h1.heart span:nth-child(17) {
       transition-delay: calc(.05s * 17); }
-    .talk h1.heart span:nth-child(18) {
+    .about h1.heart span:nth-child(18) {
       transition-delay: calc(.05s * 18); }
-    .talk h1.heart span:nth-child(19) {
+    .about h1.heart span:nth-child(19) {
       transition-delay: calc(.05s * 19); }
-    .talk h1.heart span:nth-child(20) {
+    .about h1.heart span:nth-child(20) {
       transition-delay: calc(.05s * 20); }
-    .talk h1.heart span:nth-child(21) {
+    .about h1.heart span:nth-child(21) {
       transition-delay: calc(.05s * 21); }
-    .talk h1.heart span:nth-child(22) {
+    .about h1.heart span:nth-child(22) {
       transition-delay: calc(.05s * 22); }
-    .talk h1.heart span:nth-child(23) {
+    .about h1.heart span:nth-child(23) {
       transition-delay: calc(.05s * 23); }
-    .talk h1.heart span:nth-child(24) {
+    .about h1.heart span:nth-child(24) {
       transition-delay: calc(.05s * 24); }
-    .talk h1.heart span:nth-child(25) {
+    .about h1.heart span:nth-child(25) {
       transition-delay: calc(.05s * 25); }
-    .talk h1.heart span:nth-child(26) {
+    .about h1.heart span:nth-child(26) {
       transition-delay: calc(.05s * 26); }
-    .talk h1.heart span:nth-child(27) {
+    .about h1.heart span:nth-child(27) {
       transition-delay: calc(.05s * 27); }
-    .talk h1.heart span:nth-child(28) {
+    .about h1.heart span:nth-child(28) {
       transition-delay: calc(.05s * 28); }
-    .talk h1.heart span:nth-child(29) {
+    .about h1.heart span:nth-child(29) {
       transition-delay: calc(.05s * 29); }
-    .talk h1.heart span:nth-child(30) {
+    .about h1.heart span:nth-child(30) {
       transition-delay: calc(.05s * 30); }
-    .talk h1.heart span:nth-child(31) {
+    .about h1.heart span:nth-child(31) {
       transition-delay: calc(.05s * 31); }
-    .talk h1.heart span:nth-child(32) {
+    .about h1.heart span:nth-child(32) {
       transition-delay: calc(.05s * 32); }
-    .talk h1.heart span:nth-child(33) {
+    .about h1.heart span:nth-child(33) {
       transition-delay: calc(.05s * 33); }
-    .talk h1.heart span:nth-child(34) {
+    .about h1.heart span:nth-child(34) {
       transition-delay: calc(.05s * 34); }
-    .talk h1.heart span:nth-child(35) {
+    .about h1.heart span:nth-child(35) {
       transition-delay: calc(.05s * 35); }
-    .talk h1.heart span:nth-child(36) {
+    .about h1.heart span:nth-child(36) {
       transition-delay: calc(.05s * 36); }
-    .talk h1.heart span:nth-child(37) {
+    .about h1.heart span:nth-child(37) {
       transition-delay: calc(.05s * 37); }
-    .talk h1.heart span:nth-child(38) {
+    .about h1.heart span:nth-child(38) {
       transition-delay: calc(.05s * 38); }
-    .talk h1.heart span:nth-child(39) {
+    .about h1.heart span:nth-child(39) {
       transition-delay: calc(.05s * 39); }
-    .talk h1.heart span:nth-child(40) {
+    .about h1.heart span:nth-child(40) {
       transition-delay: calc(.05s * 40); }
-    .talk h1.heart span:nth-child(41) {
+    .about h1.heart span:nth-child(41) {
       transition-delay: calc(.05s * 41); }
-    .talk h1.heart span:nth-child(42) {
+    .about h1.heart span:nth-child(42) {
       transition-delay: calc(.05s * 42); }
-    .talk h1.heart span:nth-child(43) {
+    .about h1.heart span:nth-child(43) {
       transition-delay: calc(.05s * 43); }
-    .talk h1.heart span:nth-child(44) {
+    .about h1.heart span:nth-child(44) {
       transition-delay: calc(.05s * 44); }
-    .talk h1.heart span:nth-child(45) {
+    .about h1.heart span:nth-child(45) {
       transition-delay: calc(.05s * 45); }
-    .talk h1.heart span:nth-child(46) {
+    .about h1.heart span:nth-child(46) {
       transition-delay: calc(.05s * 46); }
-    .talk h1.heart span:nth-child(47) {
+    .about h1.heart span:nth-child(47) {
       transition-delay: calc(.05s * 47); }
-    .talk h1.heart span:nth-child(48) {
+    .about h1.heart span:nth-child(48) {
       transition-delay: calc(.05s * 48); }
-    .talk h1.heart span:nth-child(49) {
+    .about h1.heart span:nth-child(49) {
       transition-delay: calc(.05s * 49); }
-    .talk h1.heart span:nth-child(50) {
+    .about h1.heart span:nth-child(50) {
       transition-delay: calc(.05s * 50); }
-    .talk h1.heart span:nth-child(51) {
+    .about h1.heart span:nth-child(51) {
       transition-delay: calc(.05s * 51); }
-    .talk h1.heart span:nth-child(52) {
+    .about h1.heart span:nth-child(52) {
       transition-delay: calc(.05s * 52); }
-    .talk h1.heart span:nth-child(53) {
+    .about h1.heart span:nth-child(53) {
       transition-delay: calc(.05s * 53); }
-    .talk h1.heart span:nth-child(54) {
+    .about h1.heart span:nth-child(54) {
       transition-delay: calc(.05s * 54); }
-    .talk h1.heart span:nth-child(55) {
+    .about h1.heart span:nth-child(55) {
       transition-delay: calc(.05s * 55); }
-    .talk h1.heart span:nth-child(56) {
+    .about h1.heart span:nth-child(56) {
       transition-delay: calc(.05s * 56); }
-    .talk h1.heart span:nth-child(57) {
+    .about h1.heart span:nth-child(57) {
       transition-delay: calc(.05s * 57); }
-    .talk h1.heart span:nth-child(58) {
+    .about h1.heart span:nth-child(58) {
       transition-delay: calc(.05s * 58); }
-    .talk h1.heart span:nth-child(59) {
+    .about h1.heart span:nth-child(59) {
       transition-delay: calc(.05s * 59); }
-    .talk h1.heart span:nth-child(60) {
+    .about h1.heart span:nth-child(60) {
       transition-delay: calc(.05s * 60); }
-    .talk h1.heart span:nth-child(61) {
+    .about h1.heart span:nth-child(61) {
       transition-delay: calc(.05s * 61); }
-    .talk h1.heart span:nth-child(62) {
+    .about h1.heart span:nth-child(62) {
       transition-delay: calc(.05s * 62); }
-    .talk h1.heart span:nth-child(63) {
+    .about h1.heart span:nth-child(63) {
       transition-delay: calc(.05s * 63); }
-    .talk h1.heart span:nth-child(64) {
+    .about h1.heart span:nth-child(64) {
       transition-delay: calc(.05s * 64); }
-    .talk h1.heart span:nth-child(65) {
+    .about h1.heart span:nth-child(65) {
       transition-delay: calc(.05s * 65); }
-    .talk h1.heart span:nth-child(66) {
+    .about h1.heart span:nth-child(66) {
       transition-delay: calc(.05s * 66); }
-    .talk h1.heart span:nth-child(67) {
+    .about h1.heart span:nth-child(67) {
       transition-delay: calc(.05s * 67); }
-    .talk h1.heart span:nth-child(68) {
+    .about h1.heart span:nth-child(68) {
       transition-delay: calc(.05s * 68); }
-    .talk h1.heart span:nth-child(69) {
+    .about h1.heart span:nth-child(69) {
       transition-delay: calc(.05s * 69); }
-    .talk h1.heart span:nth-child(70) {
+    .about h1.heart span:nth-child(70) {
       transition-delay: calc(.05s * 70); }
-    .talk h1.heart span:nth-child(71) {
+    .about h1.heart span:nth-child(71) {
       transition-delay: calc(.05s * 71); }
-    .talk h1.heart span:nth-child(72) {
+    .about h1.heart span:nth-child(72) {
       transition-delay: calc(.05s * 72); }
-    .talk h1.heart span:nth-child(73) {
+    .about h1.heart span:nth-child(73) {
       transition-delay: calc(.05s * 73); }
-    .talk h1.heart span:nth-child(74) {
+    .about h1.heart span:nth-child(74) {
       transition-delay: calc(.05s * 74); }
-    .talk h1.heart span:nth-child(75) {
+    .about h1.heart span:nth-child(75) {
       transition-delay: calc(.05s * 75); }
-    .talk h1.heart span:nth-child(76) {
+    .about h1.heart span:nth-child(76) {
       transition-delay: calc(.05s * 76); }
-    .talk h1.heart span:nth-child(77) {
+    .about h1.heart span:nth-child(77) {
       transition-delay: calc(.05s * 77); }
-    .talk h1.heart span:nth-child(78) {
+    .about h1.heart span:nth-child(78) {
       transition-delay: calc(.05s * 78); }
-    .talk h1.heart span:nth-child(79) {
+    .about h1.heart span:nth-child(79) {
       transition-delay: calc(.05s * 79); }
-    .talk h1.heart span:nth-child(80) {
+    .about h1.heart span:nth-child(80) {
       transition-delay: calc(.05s * 80); }
-    .talk h1.heart span:nth-child(81) {
+    .about h1.heart span:nth-child(81) {
       transition-delay: calc(.05s * 81); }
-    .talk h1.heart span:nth-child(82) {
+    .about h1.heart span:nth-child(82) {
       transition-delay: calc(.05s * 82); }
-    .talk h1.heart span:nth-child(83) {
+    .about h1.heart span:nth-child(83) {
       transition-delay: calc(.05s * 83); }
-    .talk h1.heart span:nth-child(84) {
+    .about h1.heart span:nth-child(84) {
       transition-delay: calc(.05s * 84); }
-    .talk h1.heart span:nth-child(85) {
+    .about h1.heart span:nth-child(85) {
       transition-delay: calc(.05s * 85); }
-    .talk h1.heart span:nth-child(86) {
+    .about h1.heart span:nth-child(86) {
       transition-delay: calc(.05s * 86); }
-    .talk h1.heart span:nth-child(87) {
+    .about h1.heart span:nth-child(87) {
       transition-delay: calc(.05s * 87); }
-    .talk h1.heart span:nth-child(88) {
+    .about h1.heart span:nth-child(88) {
       transition-delay: calc(.05s * 88); }
-    .talk h1.heart span:nth-child(89) {
+    .about h1.heart span:nth-child(89) {
       transition-delay: calc(.05s * 89); }
-    .talk h1.heart span:nth-child(90) {
+    .about h1.heart span:nth-child(90) {
       transition-delay: calc(.05s * 90); }
-    .talk h1.heart span:nth-child(91) {
+    .about h1.heart span:nth-child(91) {
       transition-delay: calc(.05s * 91); }
-    .talk h1.heart span:nth-child(92) {
+    .about h1.heart span:nth-child(92) {
       transition-delay: calc(.05s * 92); }
-    .talk h1.heart span:nth-child(93) {
+    .about h1.heart span:nth-child(93) {
       transition-delay: calc(.05s * 93); }
-    .talk h1.heart span:nth-child(94) {
+    .about h1.heart span:nth-child(94) {
       transition-delay: calc(.05s * 94); }
-    .talk h1.heart span:nth-child(95) {
+    .about h1.heart span:nth-child(95) {
       transition-delay: calc(.05s * 95); }
-    .talk h1.heart span:nth-child(96) {
+    .about h1.heart span:nth-child(96) {
       transition-delay: calc(.05s * 96); }
-    .talk h1.heart span:nth-child(97) {
+    .about h1.heart span:nth-child(97) {
       transition-delay: calc(.05s * 97); }
-    .talk h1.heart span:nth-child(98) {
+    .about h1.heart span:nth-child(98) {
       transition-delay: calc(.05s * 98); }
-    .talk h1.heart span:nth-child(99) {
+    .about h1.heart span:nth-child(99) {
       transition-delay: calc(.05s * 99); }
-    .talk h1.heart span:nth-child(100) {
+    .about h1.heart span:nth-child(100) {
       transition-delay: calc(.05s * 100); }
 @media only screen and (max-width: 650px) {
-  .talk img.face {
+  .about img.face {
     opacity: 0.4; }
-  .talk h1.heart {
-    display: none; }
-  .talk section {
+  .about h1.heart {
+    font-size: 1.8em;
+    line-height: 2.2em;
+    margin-bottom: 110px; }
+  .about section {
     left: 5vw;
     text-align: center;
     min-width: auto;

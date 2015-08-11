@@ -142,11 +142,11 @@ h2.name {
     }
 }
 
-.home section, .talk section {
+.home section, .about section {
     width: 300px;
     padding-right: 30px;
     position: fixed;
-    bottom: 100px;
+    bottom: 5vh;
     right: 10vw;
 
     @include small {
@@ -207,7 +207,7 @@ ui-view.main {
         overflow-x: hidden;
     }
 }
-.talk {
+.about {
     section {
         width: 30vw;
         right: auto;
@@ -223,6 +223,10 @@ ui-view.main {
     }
     .back {
         font-weight: $light;
+        display: none;
+        @include small {
+            display: block;
+        }
     }
     h1.heart {
         text-align: center;
@@ -233,7 +237,13 @@ ui-view.main {
         display: block;
         font-size: 3em;
         font-weight: $book;
-        margin-bottom: 240px;
+        margin-bottom: 340px;
+
+        @include medium {
+            font-size: 1.8em;
+            line-height: 2.2em;
+            margin-bottom: 110px;
+        }
 
         span {
             @include spanTransition;
@@ -244,7 +254,10 @@ ui-view.main {
             opacity: .4;
         }
         h1.heart {
-            display: none;
+            // display: none;
+            font-size: 1.8em;
+            line-height: 2.2em;
+            margin-bottom: 110px;
         }
         section {
             left: 5vw;

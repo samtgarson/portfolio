@@ -54,7 +54,7 @@ angular.module('states', [])
                     }
                 },
             })
-            .state('talk', {
+            .state('about', {
                 'url'               : '/about',
                 'templateUrl': templater('talk'), 
                 'controller': 'talkController'

@@ -1,4 +1,5 @@
 var gulp            = require('gulp'),
+    push            = require('divshot-push'),
     gulpLoadPlugins = require('gulp-load-plugins'),
     $               = gulpLoadPlugins(),
     argv            = require('yargs').argv,
@@ -132,7 +133,11 @@ gulp.task('default', ['connect', 'slim_index', 'sass:development', 'tpl', 'js:de
 });
 
 // Build JS and SASS
-gulp.task('build', ['tpl', 'slim_index', 'js:build', 'sass:build']);
+gulp.task('build', ['tpl', 'slim_index', 'js:build', 'sass:build'], function () {
+    gulp.src('./build/**/*')
+        .pipe($.git.add())
+        .pipe($.git.commit('BUILD'));
+});
 
 // Create new feature with --name
 gulp.task('newfeature', function() {
