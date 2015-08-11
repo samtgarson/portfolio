@@ -1,5 +1,4 @@
 var gulp            = require('gulp'),
-    push            = require('divshot-push'),
     gulpLoadPlugins = require('gulp-load-plugins'),
     $               = gulpLoadPlugins(),
     argv            = require('yargs').argv,
