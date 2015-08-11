@@ -1,0 +1,36 @@
+doctype html
+html lang="en" ng-app="app" ng-controller="appController"
+    head
+        meta charset="utf-8"
+        / base href="/"
+        javascript:
+            var p = window.location.pathname == '/portfolio' | window.location.pathname == '/portfolio/' ? '/portfolio/' : '/';
+            document.write("<base href='" + p + "' />");
+        title ng-bind="title" 
+        meta content="" name="description"
+        meta content="" name="author"
+        meta content="initial-scale=1, maximum-scale=1, width=device-width" name="viewport"
+        link href="normalize.css" rel="stylesheet"
+        link href="style.css" rel="stylesheet"
+        script src="script.js" type="application/javascript" 
+        /[if lt IE 9]
+            script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"
+
+    body ng-class="page"
+        h1.name.rando switcher="true" Sam 
+        h1.name.rando switcher="true" Garson
+        h2.name.rando ui-sref="home" multiplier=".15" Sam Garson
+        nav ng-if="page"
+            h2.mini
+                span S
+                span a
+                span m
+            h2.mini
+                span G
+                span a
+                span r
+                span s
+                span o
+                span n
+            a ng-click="goBack()" &larr; Back
+        ui-view.main ng-class="{'show': show}"

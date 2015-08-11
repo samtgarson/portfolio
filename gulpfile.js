@@ -133,11 +133,10 @@ gulp.task('default', ['connect', 'slim_index', 'sass:development', 'tpl', 'js:de
 
 // Build JS and SASS
 gulp.task('build', ['tpl', 'slim_index', 'js:build', 'sass:build'], function () {
-    setTimeout(function() {
-        gulp.src('.')
-            .pipe($.git.add())
-            .pipe($.git.commit('BUILD'));
-    }, 100);
+    gulp.src('./*')
+        .pipe($.git.add({args: '-A'}))
+        .pipe($.git.commit('BUILD'))
+        .pipe($.git.reset('HEAD'));
 });
 
 // Create new feature with --name
