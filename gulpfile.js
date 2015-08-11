@@ -137,7 +137,7 @@ gulp.task('build', ['tpl', 'slim_index', 'js:build', 'sass:build'], function () 
         gulp.src('.')
             .pipe($.git.add())
             .pipe($.git.commit('BUILD'));
-    }, 0);
+    }, 100);
 });
 
 // Create new feature with --name
