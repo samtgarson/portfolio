@@ -81,16 +81,26 @@ angular.module('filters', [])
                             $($i).unwrap();
                             if (!$($i).parent().hasClass('content')) $($i).unwrap();
                             tempGal.push($i);
-                        } else if (tempGal.length) {
-                            $(tempGal).wrapAll('<div class="gallery-wrapper"></div>').wrapAll('<div class="gallery"></div>');
-                            tempGal = [];
+                        } else {
+                            if (tempGal.length) {
+                                $(tempGal).wrapAll('<div class="gallery-wrapper"></div>').wrapAll('<div class="gallery"></div>');
+                                tempGal = [];
+                            }
+
+                            if ($t.hasClass('block-img') && hasCaption($t)) {
+                                var cap = $t.next();
+                                $t.append(cap.clone().addClass('gallery-arrows'));
+                                cap.remove();
+                            }
                         }
                     });
 
                     $('.gallery').each(function() {
                         var $gal = $(this),
                             src = $gal.children(':first').attr('src'), ratio,
-                            w = parseInt($gal.children('img:first').addClass('selected').css('maxWidth'));
+                            w = $(el).width() * 0.95;
+
+                        $gal.children(':first').addClass('selected');
 
                         $("<img/>") // Make in memory copy of image to avoid css issues
                             .attr("src", src)
@@ -111,6 +121,13 @@ angular.module('filters', [])
                         });
 
                         $('<div class="gallery-arrows">').append([left, right, count]).insertAfter($gal);
+
+                        if (hasCaption($gal)) {
+                            var cap = $gal.parent().next();
+                            $gal.next('.gallery-arrows').prepend(cap.clone());
+                            cap.remove();
+                        }
+
                         checkArrows();
 
                         $gal.children('img').on('click', function(e){
@@ -180,6 +197,10 @@ angular.module('filters', [])
                         return this.nextAll().filter(sel).length !== 0;
                     };
                 })(jQuery);
+
+                function hasCaption (e) {
+                    return $(e).parent().hasClass('content') ? $(e).next().hasClass('caption') : hasCaption($(e).parent()[0]);
+                }
 
                 $timeout(processGallery, 0);
             }

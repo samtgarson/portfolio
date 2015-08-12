@@ -107,15 +107,26 @@ ol.stories-list {
         display: block;
         max-width: 750px;
         text-justify: left;
+        font-weight: $light;
 
         img {
             max-width: 650px;
+            width: 95%;
         }
 
         h1 {
             font-size: 1.2em;
             font-weight: $medium;
             margin-top: 100px;
+        }
+
+        a[href] {
+            font-weight: $book;
+        }
+
+        .block-img {
+            position: relative;
+            margin: 30px 0;
         }
 
         .quote {
@@ -145,9 +156,10 @@ ol.stories-list {
         }
 
         .gallery-wrapper {
-            max-width: 100%;
+            max-width: 95%;
             margin: 100px 0;
             overflow-x: visible;
+            position: relative;
 
             @include small {
                 margin: 40px 0;
@@ -168,10 +180,9 @@ ol.stories-list {
                 cursor: url('img/left-arrow.svg'), w-resize;
                 transition: opacity 1s ease;
                 max-width: none;
+                width: auto;
+                height: 100%;
 
-                &:first-child {
-                    max-width: 650px;
-                }
 
                 &.selected {
                     opacity: 1;
@@ -205,8 +216,21 @@ ol.stories-list {
                 }
             }
         }
+        .caption {
+            text-shadow: 1px 1px 3px rgba($primary, .5), -1px -1px 3px rgba($primary, .5), 1px -1px 3px rgba($primary, .5), -1px 1px 3px rgba($primary, .5);
+        }
         .gallery-arrows {
+            position: absolute;
+            width: 200px;
+            bottom: 50px;
+            // font-style: italic;
+            // font-weight: $book;
+            left: -100px;
+            font-size: .8em;
+            line-height: 160%;
+
             a {
+                font-size: 1.4em;
                 cursor: pointer;
             }
             .disabled {
@@ -215,11 +239,8 @@ ol.stories-list {
                 pointer-events: none;
             }
             .gallery-count {
+                font-size: 1.4em;
                 margin-left: 10px;
-            }
-            @include small {
-                font-size: 1.6em;
-                line-height: 3em;
             }
         }
     }
@@ -236,7 +257,7 @@ ol.stories-list {
         }
         img.cover {
             height: 30vh;
-            top: 16vh;
+            top: 10vh;
             z-index: 0;
             left: 50vw;
             transform: translateX(-50%);
@@ -265,10 +286,20 @@ ol.stories-list {
             }
             .gallery {
                 img:first-child {
-                    max-width: 70vw;
+                    // max-width: 70vw;
                 }
                 img {
                     margin-right: 32px;
+                }
+            }
+            .gallery-arrows {
+                display: block;
+                position: static;
+                width: 100%;
+                font-size: .8em;
+                left: auto;
+                a, .gallery-count {
+                    font-size: 1.5em;
                 }
             }
         }

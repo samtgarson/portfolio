@@ -28,9 +28,20 @@ a {
 
 .clickable, [ui-sref], [ng-click], [href] {
     cursor: pointer;
+    display: inline-block;
+    &:not(h2):not(li)::after {
+      height: 2px;
+      background-color: $b;
+      display: block;
+      content: ' ';
+      width: 0;
+      transition: width .4s;
+      margin-top: -5px;
+    }
 
-    &:active, &:hover {
-      text-decoration: underline;
+    &:active::after, &:hover::after {
+      // text-decoration: underline;
+      width: 100%;
     }
 }
 
