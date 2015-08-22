@@ -1,5 +1,5 @@
 ol.stories-list
-    li.no-link ng-repeat="story in stories" ui-sref="parent.story({id: story.id})"
+    li.no-link ng-repeat="story in stories" ui-sref="parent.story({slug: story.slug})"
         h1.title {{story.fragments['story.title'].value[0].text}}
         img.cover ng-src="{{story.fragments['story.cover'].value.main.url}}"
         h6 {{story.fragments['story.date'].value | amDateFormat : 'MMMM YYYY' }}

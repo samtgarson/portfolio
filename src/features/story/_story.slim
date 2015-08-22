@@ -10,7 +10,7 @@ prismic-html.content fragment="story.fragments['story.content']"
 h3.testimonial ng-if="story.fragments['story.quote']" {{story.fragments['story.quote'].value}}
 h6.source ng-if="story.fragments['story.quote-source']" {{story.fragments['story.quote-source'].value}}
 
-.next.no-link ng-if="nextStory" ui-sref="parent.story({id: nextStory.id})"
+.next.no-link ng-if="nextStory" ui-sref="parent.story({slug: nextStory.slug})"
     h6 next story
     h1 {{nextStory.fragments['story.title'].value[0].text}}
     img ng-src="{{nextStory.fragments['story.cover'].value.main.url}}"

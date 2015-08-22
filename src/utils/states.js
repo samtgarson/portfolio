@@ -66,7 +66,7 @@ angular.module('states', [])
                 'controller': 'talkController'
             })
             .state('parent.story', {
-                'url'               : ':id',
+                'url'               : ':slug',
                 'templateUrl': templater('story'), 
                 'controller': 'storyController'
             });

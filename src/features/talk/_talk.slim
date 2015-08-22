@@ -24,7 +24,7 @@ section
 
     ul.quotes
         li.see See the Case Study &rarr;
-        li.no-link ng-repeat="quote in quotes" ng-class="{'show': index == $index}" ui-sref="parent.story({id: quote.id})"
+        li.no-link ng-repeat="quote in quotes" ng-class="{'show': index == $index}" ui-sref="parent.story({slug: quote.slug})"
             h3.testimonial {{quote.words}}
             h6.source {{quote.source}}
 
