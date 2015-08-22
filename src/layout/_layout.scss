@@ -99,27 +99,30 @@ h1.name {
     transition-property: all;
     transition-duration: .8s;
     transition-timing-function: cubic-bezier(0.000, 1.085, 0.795, 1.000);
+
     font-size: 10vw;
     font-weight: normal;
-    letter-spacing: 4vw;
-    width: calc(92vw - 350px);
-    position: relative;
-    left: 8vw;
+    letter-spacing: 3vw;
+    
+    width: calc(100vw - 450px);
+    position: fixed;
+    left: 450px;
     top: 9vw;
+    height: 1em;
     box-sizing: border-box;
     pointer-events: auto;
-    // font-weight: 400;
+    // font-weight: bold;
 
     &:first-of-type {
-        left: 18vw;
+        left: 650px;
     }
     &:last-of-type {
         top: 50vh;
     }
     @include medium {
-        width: 55vw;
-        left: 1vw;
-        letter-spacing: 60px;
+        // width: 55vw;
+        // right: 1vw;
+        // letter-spacing: 60px;
     }
     @include small {
         display: none;
@@ -150,19 +153,22 @@ h2.name {
 
 .home section {
     width: 300px;
-    padding-right: 30px;
+    padding-bottom: 100px;
     position: fixed;
-    bottom: 5vh;
-    right: 10vw;
+    top: 100px;
+    left: 50px;
+    box-sizing: border-box;
 
     @include small {
-        width: 200px;
-        bottom: 20px;
+        width: 100%;
+        padding-top: 40px;
         left: 0;
         right: 0;
         margin: 0 auto;
-        br {
+        position: static;
+        br:nth-of-type(odd) {
             display: none;
+            // line-height: 5px;
         }
     }
 
@@ -215,6 +221,7 @@ ui-view.main {
         overflow-x: hidden;
     }
 }
+
 .about {
     h1.heart {
         text-align: center;
