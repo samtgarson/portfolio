@@ -118,7 +118,8 @@ angular.module('filters', [])
                         var $gal = $(this),
                             src = $gal.children(':first').attr('src'), ratio,
                             mini = $gal.hasClass('mini-gallery'),
-                            w = $(el).width() * (mini?0.4:0.95);
+                            w = $(el).width() * (mini?0.4:0.95), h,
+                            viewp = $(window).height();
 
                         $gal.children(':first').addClass('selected');
 
@@ -126,7 +127,10 @@ angular.module('filters', [])
                             .attr("src", src)
                             .load(function() {
                                 ratio = this.height / this.width;
-                                $gal.height(w * ratio);
+                                h = w * ratio;
+                                if (h > viewp * 0.7) h = viewp * 0.7;
+                                $gal.height(h);
+
                                 $gal.children('img').each(function() {
                                     this.style.display = 'none';
                                     this.offsetHeight;

@@ -1937,7 +1937,8 @@ h2.name {
   position: fixed;
   top: 100px;
   left: 50px;
-  box-sizing: border-box; }
+  box-sizing: border-box;
+  overflow-y: scroll; }
   @media only screen and (max-width: 650px) {
     .home section {
       width: 100%;
@@ -2677,7 +2678,7 @@ h3.testimonial {
   padding-bottom: 60px; }
   .story .content img {
     max-width: 650px;
-    width: 95%; }
+    max-height: 70vh; }
   .story .content h1 {
     font-size: 1.2em;
     font-weight: bold;
@@ -2839,6 +2840,9 @@ h3.testimonial {
       left: -21px; }
     .story .content .quote::before, .story .content .quote::after {
       margin-top: 12px; }
+  .story .content img {
+    max-height: auto;
+    max-width: 95%; }
   .story .content h1 {
     margin-top: 30px; }
   .story .content .gallery img {

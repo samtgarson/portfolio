@@ -25736,11 +25736,13 @@ angular.module("filters", []).filter("titlecase", function() {
                     }
                 });
                 $(".gallery").each(function() {
-                    var $gal = $(this), src = $gal.children(":first").attr("src"), ratio, mini = $gal.hasClass("mini-gallery"), w = $(el).width() * (mini ? .4 : .95);
+                    var $gal = $(this), src = $gal.children(":first").attr("src"), ratio, mini = $gal.hasClass("mini-gallery"), w = $(el).width() * (mini ? .4 : .95), h, viewp = $(window).height();
                     $gal.children(":first").addClass("selected");
                     $("<img/>").attr("src", src).load(function() {
                         ratio = this.height / this.width;
-                        $gal.height(w * ratio);
+                        h = w * ratio;
+                        if (h > viewp * .7) h = viewp * .7;
+                        $gal.height(h);
                         $gal.children("img").each(function() {
                             this.style.display = "none";
                             this.offsetHeight;

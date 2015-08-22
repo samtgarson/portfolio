@@ -150,7 +150,6 @@ h2.name {
         }
     }
 }
-
 .home section {
     width: 300px;
     padding-bottom: 100px;
@@ -158,6 +157,7 @@ h2.name {
     top: 100px;
     left: 50px;
     box-sizing: border-box;
+    overflow-y: scroll;
 
     @include small {
         width: 100%;
