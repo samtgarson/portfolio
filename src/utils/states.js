@@ -29,7 +29,7 @@ angular.module('states', [])
             
         $locationProvider.html5Mode(true);
 
-        $stickyStateProvider.enableDebug(true);
+        // $stickyStateProvider.enableDebug(true);
 
         // Function to generate template urls
         function templater (page, child) {
@@ -38,35 +38,36 @@ angular.module('states', [])
         }
 
         $stateProvider
-            // Misc States
-            .state('home', {
+            .state('parent', {
                 'url'               : '/',
+                'template': '<ui-view></ui-view>', 
+                'abstract': true,
+                'resolve': {
+                    'Stories': function(Prismic) {
+                        return Prismic.query('[[:d = at(document.type, "story")]]', function(searchForm) {
+                            return searchForm.orderings('[my.story.date desc]');
+                        });
+                    }
+                }
+            })
+            .state('parent.home', {
+                'url'               : '',
                 'templateUrl': templater('home'), 
                 'controller': 'homeController'
             })
-            .state('stories', {
-                'url'               : '/stories',
+            .state('parent.stories', {
+                'url'               : 'stories',
                 'templateUrl': templater('stories'), 
-                'controller': 'storiesController',
-                'resolve': {
-                    'Stories': function(Prismic) {
-                        return Prismic.query('[[:d = at(document.type, "story")]][my.story.date desc]');
-                    }
-                },
+                'controller': 'storiesController'
             })
-            .state('about', {
-                'url'               : '/about',
+            .state('parent.about', {
+                'url'               : 'about',
                 'templateUrl': templater('talk'), 
                 'controller': 'talkController'
             })
-            .state('story', {
-                'url'               : '/:id',
+            .state('parent.story', {
+                'url'               : ':id',
                 'templateUrl': templater('story'), 
-                'controller': 'storyController',
-                'resolve': {
-                    'Stories': function(Prismic) {
-                        return Prismic.query('[[:d = at(document.type, "story")]][my.story.date desc]');
-                    }
-                }
+                'controller': 'storyController'
             });
     });

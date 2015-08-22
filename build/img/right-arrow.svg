@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg width="31px" height="24px" viewBox="0 0 31 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+<svg width="36px" height="17px" viewBox="0 0 36 17" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
     <!-- Generator: Sketch 3.3.3 (12072) - http://www.bohemiancoding.com/sketch -->
     <title>right-arrow</title>
     <desc>Created with Sketch.</desc>
     <defs></defs>
     <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
-        <g id="Desktop-HD" sketch:type="MSArtboardGroup" transform="translate(-575.000000, -493.000000)" fill="#000000">
-            <path d="M575.182,503.875 L575.182,506.111 L601.455,506.111 L592.554,515.012 L594.145,516.646 L605.841,504.993 L594.145,493.34 L592.554,494.974 L601.455,503.875 L575.182,503.875 Z" id="right-arrow" sketch:type="MSShapeGroup"></path>
+        <g id="Desktop-HD" sketch:type="MSArtboardGroup" transform="translate(-131.000000, -534.000000)" fill="#000000">
+            <path d="M166.702,542.611 L157.378,534.767 L157.378,541.094 L131.626,541.094 L131.626,544.165 L157.378,544.165 L157.378,550.418 L166.702,542.611 Z" id="right-arrow" sketch:type="MSShapeGroup"></path>
         </g>
     </g>
 </svg>

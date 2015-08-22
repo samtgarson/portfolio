@@ -24,7 +24,7 @@ body {
         width: 100%;
         height: 100%;
         background-color: $primary;
-        z-index: -1;
+        z-index: -3;
         top: 0;
         left: 0;
         transition-property: all;
@@ -37,8 +37,10 @@ body {
     &.stories::before {
         transform: scale(2) rotate(10deg) translateX(50vw);   
     }
-    &.story::before {
-        transform: scale(1.2) rotate(6deg) translateY(-10vh);      
+    &.story {
+        &::before {
+        transform: scale(1.2) rotate(3deg) translateY(-12vh);      
+        }
     }
 
 
@@ -83,6 +85,10 @@ nav {
         @include spanTransition;
     }
 
+    h3.scrollable {
+        font-weight: normal;
+    }
+
     @include small {
         display: none;
     }
@@ -94,7 +100,7 @@ h1.name {
     transition-duration: .8s;
     transition-timing-function: cubic-bezier(0.000, 1.085, 0.795, 1.000);
     font-size: 10vw;
-    font-weight: $book;
+    font-weight: normal;
     letter-spacing: 4vw;
     width: calc(92vw - 350px);
     position: relative;
@@ -133,7 +139,7 @@ h2.name {
         top: 20px;
         text-align: center;
         letter-spacing: 15px;
-        font-weight: $book;
+        font-weight: normal;
         height: 10vh;
         font-size: 1em;
         span {
@@ -142,7 +148,7 @@ h2.name {
     }
 }
 
-.home section, .about section {
+.home section {
     width: 300px;
     padding-right: 30px;
     position: fixed;
@@ -155,7 +161,9 @@ h2.name {
         left: 0;
         right: 0;
         margin: 0 auto;
-
+        br {
+            display: none;
+        }
     }
 
     ul {
@@ -180,9 +188,9 @@ ui-view.main {
     transition: opacity .6s;
     transition-timing-function: cubic-bezier(0.000, 1.085, 0.795, 1.000);
 
-    & > * {
+    ui-view > * {
         transform: translateY(20px);
-        transition: transform .6s;
+        transition: transform .6s !important;
         transition-timing-function: cubic-bezier(0.000, 1.085, 0.795, 1.000);
     }
 
@@ -194,7 +202,7 @@ ui-view.main {
             padding-top: 55px;
         }
 
-        & > * {
+        ui-view > * {
             transform: translateY(0px);
         }
     }
@@ -208,36 +216,20 @@ ui-view.main {
     }
 }
 .about {
-    section {
-        width: 30vw;
-        right: auto;
-        left: 50vw;
-        min-width: 400px;
-    }
-    img.face {
-        position: fixed;
-        height: 100vh;
-        bottom: 0;
-        left: 0;
-        opacity: .65;
-    }
-    .back {
-        font-weight: $light;
-        display: none;
-        @include small {
-            display: block;
-        }
-    }
     h1.heart {
         text-align: center;
         letter-spacing: 20px;
+        position: absolute;
         line-height: 2em;
-        position: relative;
+        width: 100%;
+        max-width: 750px;
+        top: -27.5vh;
         height: 70px;
         display: block;
         font-size: 3em;
-        font-weight: $book;
+        font-weight: normal;
         margin-bottom: 340px;
+        margin-right: 100px;
 
         @include medium {
             font-size: 1.8em;
@@ -245,9 +237,58 @@ ui-view.main {
             margin-bottom: 110px;
         }
 
+        @media only screen and (max-height: 660px) { 
+            display: none;
+        }
+
         span {
             @include spanTransition;
         }
+    }
+    section {
+        overflow-y: visible;
+        margin-right: 100px;
+        margin-left: auto;
+        min-width: 400px;
+        max-width: 750px;
+        position: relative;
+        @media only screen and (max-height: 660px) { 
+            font-size: .9em;
+            line-height: 180%;
+        }
+
+        ul {
+            padding: 0;
+            li {
+                list-style-type: none;
+            }
+        }
+
+        a {
+            font-weight: bold;
+        }
+    }
+    img.face {
+        position: fixed;
+        height: 100vh;
+        bottom: 0;
+        left: 0;
+        opacity: .65;
+        z-index: -1;
+    }
+    .back {
+        font-weight: normal;
+        display: none;
+        @include small {
+            display: inline-block;
+        }
+    }
+    p.social {
+        display: inline-block;
+        width: 48%;
+    }
+    hr {
+        border: 1px solid $b;
     }
     @include small {
         img.face {
@@ -260,10 +301,10 @@ ui-view.main {
             margin-bottom: 110px;
         }
         section {
-            left: 5vw;
             text-align: center;
-            min-width: auto;
-            width: 90vw;
+            min-width: 0;
+            width: 100%;
+            padding-top: 60px;
         }
     }
 }

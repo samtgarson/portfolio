@@ -67,30 +67,49 @@ angular.module('filters', [])
             }
         };
     })
-    .directive('content', function($timeout){
+    .directive('content', function($timeout, $http){
         // Runs during compile
         return {
             restrict: 'C',
             link: function(scope, el, attrs) {
-                var tempGal = [];
+                var tempGal = [], mini = false;
                 function processGallery() {
                     $(el).children().each(function(e) {
                         var $t = $(this), t = this;
-                        if ($t.hasClass('gallery')) {
-                            var $i = $t.removeClass('gallery').find('img')[0];
+                        if ($t.hasClass('gallery') || $t.hasClass('mini-gallery')) {
+                            mini = $t.hasClass('mini-gallery');
+                            var $i = $t.removeClass('mini-gallery gallery').find('img')[0];
                             $($i).unwrap();
                             if (!$($i).parent().hasClass('content')) $($i).unwrap();
                             tempGal.push($i);
                         } else {
                             if (tempGal.length) {
-                                $(tempGal).wrapAll('<div class="gallery-wrapper"></div>').wrapAll('<div class="gallery"></div>');
-                                tempGal = [];
+                                $(tempGal).wrapAll('<div class="gallery-wrapper"></div>').wrapAll('<div class="gallery' + (mini?' mini-gallery':'') + '"></div>');
+                                tempGal = []; 
+                                type = false;
                             }
 
-                            if ($t.hasClass('block-img') && hasCaption($t)) {
-                                var cap = $t.next();
-                                $t.append(cap.clone().addClass('gallery-arrows'));
+                            if ($t.hasClass('pre')) {
+                                var d = $(t.innerText);
+                                $t.html(d);
+                                if (angular.isDefined(instgrm)) instgrm.Embeds.process();
+                            }
+
+                            if ($t.hasCaption()) {
+                                $t.addClass('hasCaption');
+                                var cap = $t.next(), newCap;
+                                if ($t.hasClass('quote')) {
+                                    newCap = $('<h6>').addClass('caption').text(cap.text());
+                                    $t.after(newCap);
+                                } else {
+                                    newCap = cap.clone().addClass('gallery-arrows');
+                                    $t.append(newCap);
+                                }
                                 cap.remove();
+                            } 
+                            
+                            if ($t.has('a').length) {
+                                $(t).children('a').attr('target', '_blank');
                             }
                         }
                     });
@@ -98,7 +117,8 @@ angular.module('filters', [])
                     $('.gallery').each(function() {
                         var $gal = $(this),
                             src = $gal.children(':first').attr('src'), ratio,
-                            w = $(el).width() * 0.95;
+                            mini = $gal.hasClass('mini-gallery'),
+                            w = $(el).width() * (mini?0.4:0.95);
 
                         $gal.children(':first').addClass('selected');
 
@@ -107,6 +127,11 @@ angular.module('filters', [])
                             .load(function() {
                                 ratio = this.height / this.width;
                                 $gal.height(w * ratio);
+                                $gal.children('img').each(function() {
+                                    this.style.display = 'none';
+                                    this.offsetHeight;
+                                    this.style.display = 'inline-block';
+                                });
                             });
 
                         var left = $("<a class='gallery-left'>&larr;</a>"),
@@ -122,13 +147,13 @@ angular.module('filters', [])
 
                         $('<div class="gallery-arrows">').append([left, right, count]).insertAfter($gal);
 
-                        if (hasCaption($gal)) {
+                        if ($gal.hasCaption()) {
                             var cap = $gal.parent().next();
                             $gal.next('.gallery-arrows').prepend(cap.clone());
                             cap.remove();
                         }
 
-                        checkArrows();
+                        checkArrows($gal);
 
                         $gal.children('img').on('click', function(e){
                             var $img = $(this), selected = $img.hasClass('selected')?$img:$img.siblings('.selected'), 
@@ -161,28 +186,27 @@ angular.module('filters', [])
                         function advance(dir) {
                             if (dir) {
                                 var cur = parseInt($gal.css('marginLeft')),
-                                    $img = $gal.children('.selected');
-                                dist = dir > 0 ? 
-                                    $img.prev().length?$img.prev().offset().left : false :
-                                    $img.next().length?$img.next().offset().left : false;
+                                    $img = $gal.children('.selected'),
+                                    toMove = dir > 0 ? $img.prev() : $img.next(),
+                                    dist = toMove.length ? toMove.offset().left - parseInt( toMove.css('marginLeft') ) : false;
                                 if (dist) {
                                     $gal.css('marginLeft', (dist - $gal.offset().left) * -1);
                                     $img.removeClass('selected');
                                     if (dir>0) $img.prev().addClass('selected');
                                     else $img.next().addClass('selected');
-                                    checkArrows();
+                                    checkArrows($gal);
                                 }
                             }
                         }
 
-                        function checkArrows () {
-                            $gal.next('.gallery-arrows').find('.gallery-left, .gallery-right').removeClass('disabled');
-                            if ($gal.find('.selected').is(':first-child')) $('.gallery-left').addClass('disabled');
-                            else if ($gal.find('.selected').is(':last-child')) $('.gallery-right').addClass('disabled');
+                        function checkArrows ($g) {
+                            $g.next('.gallery-arrows').find('.gallery-left, .gallery-right').removeClass('disabled');
+                            if ($g.find('.selected').is(':first-child')) $('.gallery-left').addClass('disabled');
+                            else if ($g.find('.selected').is(':last-child')) $('.gallery-right').addClass('disabled');
 
-                            var total = $gal.find('img').length,
-                                index = $gal.find('.selected').index() + 1;
-                            $gal.next('.gallery-arrows').find('span').text(index + '/' + total);
+                            var total = $g.find('img').length,
+                                index = $g.find('.selected').index() + 1;
+                            $g.next('.gallery-arrows').find('span').text(index + '/' + total);
                         }
 
                     });
@@ -196,13 +220,30 @@ angular.module('filters', [])
                     $.fn.isBefore= function(sel){
                         return this.nextAll().filter(sel).length !== 0;
                     };
+                    $.fn.hasCaption=function() {
+                        return this.parent().hasClass('content') ? 
+                            this.next().hasClass('caption') : 
+                                this.parent().length ?
+                                    this.parent().hasCaption() :
+                                    false;
+                    };
                 })(jQuery);
 
-                function hasCaption (e) {
-                    return $(e).parent().hasClass('content') ? $(e).next().hasClass('caption') : hasCaption($(e).parent()[0]);
-                }
-
                 $timeout(processGallery, 0);
+            }
+        };
+    })
+    .directive('scrollable', function(scroll){
+        // Runs during compile
+        return {
+            templateUrl: "utils/scrollable.html",
+            restrict: 'C',
+            link: function(scope, el, attrs) {
+                scope.perc = 0;
+                scroll.bind();
+                scope.$on('scroll', function(event, data){
+                    scope.perc = data.y / data.scrollHeight * 100;
+                });
             }
         };
     });

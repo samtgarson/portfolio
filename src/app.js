@@ -7,6 +7,7 @@ angular.module('app', [
     'ngCachedResource',
     'prismic.io',
     'angularMoment',
+    'ngScroll',
 
     // App
     'templates',
@@ -52,6 +53,10 @@ angular.module('app', [
             $scope.title = $filter('titlecase')(split) + ' | Sam Garson';
             $scope.page = split.toLowerCase();
 
+            if ($scope.page == 'story') {
+                scrollUp();
+            }
+
             $timeout(function(){
                 $scope.show = true;
             }, 600);
@@ -63,11 +68,19 @@ angular.module('app', [
 
         $scope.goBack = function() {
             var states = {
-                'story': 'stories',
-                'stories': 'home',
-                'talk': 'home'
+                'parent.story': 'parent.stories',
+                'parent.stories': 'parent.home',
+                'parent.about': 'parent.home'
             };
             $state.go(states[$state.current.name]);
         };
+        $scope.scrollToTop = function() {
+            scrollUp;
+        };
+
+        function scrollUp() {
+            var st = $("html").scrollTop() > 0 ? $("html").scrollTop() : $("body").scrollTop() ? $("body").scrollTop() : 0;
+            if (st > 0) $("html, body").animate({ scrollTop: "0" }, 1000);
+        }
     });
 

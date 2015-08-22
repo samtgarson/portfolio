@@ -29,14 +29,14 @@ a {
 .clickable, [ui-sref], [ng-click], [href] {
     cursor: pointer;
     display: inline-block;
-    &:not(h2):not(li)::after {
+    &:not(.no-link)::after {
       height: 2px;
       background-color: $b;
       display: block;
       content: ' ';
       width: 0;
       transition: width .4s;
-      margin-top: -5px;
+      margin: -5px 0 0;      
     }
 
     &:active::after, &:hover::after {

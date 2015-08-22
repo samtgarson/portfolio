@@ -1,37 +1,73 @@
-$light: 300;
-$book: 400;
-$medium: 500;
+@font-face {
+    font-family: "Circular";
+    src: url('fonts/CircularStd-Book.eot');
+    src: local('☺'), 
+        url('fonts/CircularStd-Book.eot?#iefix') format('embedded-opentype'),
+        url('fonts/CircularStd-Book.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
 
 @font-face {
-    font-family: 'PostGrotesk';
-    src: url('fonts/PostGrotesk-Light.otf') format('opentype');
-    font-weight: $light;
+    font-family: "Circular";
+    src: url('fonts/CircularStd-Medium.eot');
+    src: local('☺'), 
+        url('fonts/CircularStd-Medium.eot?#iefix') format('embedded-opentype'),
+        url('fonts/CircularStd-Medium.woff') format('woff');
+    font-weight: bold;
     font-style: normal;
 }
+
 @font-face {
-    font-family: 'PostGrotesk';
-    src: url('fonts/PostGrotesk-Book.otf') format('opentype');
-    font-weight: $book;
-    font-style: normal;
-}
-@font-face {
-    font-family: 'PostGrotesk';
-    src: url('fonts/PostGrotesk-BookItalic.otf') format('opentype');
-    font-weight: $book;
+    font-family: "Circular";
+    src: url('fonts/CircularStd-MediumItalic.eot');
+    src: local('☺'), 
+        url('fonts/CircularStd-MediumItalic.eot?#iefix') format('embedded-opentype'),
+        url('fonts/CircularStd-MediumItalic.woff') format('woff');
+    font-weight: bold;
     font-style: italic;
 }
+
 @font-face {
-    font-family: 'PostGrotesk';
-    src: url('fonts/PostGrotesk-Medium.otf') format('opentype');
-    font-weight: $medium;
-    font-style: normal;
-}
-@font-face {
-    font-family: 'PostGrotesk';
-    src: url('fonts/PostGrotesk-MediumItalic.otf') format('opentype');
-    font-weight: $medium;
+    font-family: "Circular";
+    src: url('fonts/CircularStd-BookItalic.eot');
+    src: local('☺'), 
+        url('fonts/CircularStd-BookItalic.eot?#iefix') format('embedded-opentype'),
+        url('fonts/CircularStd-BookItalic.woff') format('woff');
+    font-weight: normal;
     font-style: italic;
 }
+
+// @font-face {
+//     font-family: 'PostGrotesk';
+//     src: url('fonts/PostGrotesk-Light.otf') format('opentype');
+//     font-weight: normal;
+//     font-style: normal;
+// }
+// @font-face {
+//     font-family: 'PostGrotesk';
+//     src: url('fonts/PostGrotesk-Book.otf') format('opentype');
+//     font-weight: normal;
+//     font-style: normal;
+// }
+// @font-face {
+//     font-family: 'PostGrotesk';
+//     src: url('fonts/PostGrotesk-BookItalic.otf') format('opentype');
+//     font-weight: normal;
+//     font-style: italic;
+// }
+// @font-face {
+//     font-family: 'PostGrotesk';
+//     src: url('fonts/PostGrotesk-Medium.otf') format('opentype');
+//     font-weight: bold;
+//     font-style: normal;
+// }
+// @font-face {
+//     font-family: 'PostGrotesk';
+//     src: url('fonts/PostGrotesk-MediumItalic.otf') format('opentype');
+//     font-weight: bold;
+//     font-style: italic;
+// }
 
 @mixin alt-font {
     text-transform: uppercase;
@@ -59,9 +95,13 @@ h6 {
 }
 
 body {
-    font: $book normal 20px/180% PostGrotesk, Helvetica, sans-serif;
+    font: normal normal 20px/180% Circular, PostGrotesk, Helvetica, sans-serif;
     -webkit-font-smoothing: antialiased;
     @include small {
         font-size: 15px;
+    }
+    *::selection {
+        color: $b;
+        background: $alt;
     }
 }

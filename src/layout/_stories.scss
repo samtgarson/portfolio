@@ -1,40 +1,44 @@
 ol.stories-list {
     list-style-type: none;
-    width: 400px;
+    width: 450px;
     box-sizing: border-box;
 
     & > li {
         counter-increment: step-counter;
         box-sizing: border-box;
         position: relative;
+        margin-bottom: 160px;
 
         &:hover {
             h1::after {
-                margin-left: 20px;
+                margin-left: 30px !important;
             }
             img {
-                transform: scale(1.05) translateX(-65%) !important;
+                transform: scale(1.05) translateX(-65%) translateY(-50%) !important;
             }
         }
 
         h1.title {
             font-size: 2.3em;
-            font-weight: $medium;
+            font-weight: bold;
             margin: 0;
             position: relative;
+            padding-right: 0px;
 
             &::after {
                 content: ' \2192';
+                display: inline-block;
+                margin-right: -100px;
             }
         }
         img.cover {
             position: absolute;
             left: 0;
-            top: -100px;
-            height: 310px;
+            top: 50%;
+            height: 260px;
             z-index: -1;
             opacity: .3;
-            transform: translateX(-65%);
+            transform: translateX(-65%) translateY(-50%);
         }
 
         &::before {
@@ -43,7 +47,7 @@ ol.stories-list {
             font-size: 2.3em;
             top: 12px;
             left: -250px;
-            font-weight: $light;
+            font-weight: normal;
         }
     }
     @include small {
@@ -52,6 +56,7 @@ ol.stories-list {
 
         li {
             max-width: 100%;
+            margin-bottom: 100px;
 
             &::before {
                 display: none;
@@ -71,13 +76,46 @@ ol.stories-list {
     }
 }
 .story {
+    ui-view.main::before {
+        content: '';
+        position: absolute;
+        background-color: $w;
+        width: 300%;
+        left: -150%;
+        top: -50vh;
+        transform: rotate(2deg);
+        z-index: -2;
+        height: 70vh;
+
+        @include small {
+            top: -43vh;
+        }
+    }
+
+    ui-view.main::after {
+        content: '';
+        position: absolute;
+        background-color: $w;
+        width: 300%;
+        left: -150%;
+        bottom: 0vh;
+        transform: rotate(2deg);
+        // clip-path: polygon(0 0, 100% 28%, 100% 100%, 0% 100%);
+        z-index: -2;
+        height: 75vh;
+
+        ui-view {
+            position: relative;
+        }
+    }
+
     h1.title {
-        width: 70vw;
+        width: 100%;
         height: 20vh;
         left: -5vw;
         top: -10vh;
         font-size: 6.5vw;
-        font-weight: $book;
+        font-weight: normal;
         position: relative;
         display: block;
         line-height: 1.5em;
@@ -94,20 +132,89 @@ ol.stories-list {
         top: -15vh;
         z-index: -1;
     }
-    .date {
-        padding-top: 175px;
+    h6.source, .content h6.caption {
+        &::before {
+            content: "—";
+        }     
+    }
+    h3.testimonial {
+        margin: 0;
+        font-size: 1.5em;
+        line-height: 1.6em;
+        padding-right: 30%;
+        position: relative;
+
+        &::before {
+            content: "\201C";
+            left: -20px;
+            margin-top: 5px;
+            font-size: 1.5em;
+            position: absolute;
+        }
+
+        &::after {
+            content: "\201D";
+            font-size: 1.5em;
+            position: absolute;
+            margin-top: 0px;
+            display: inline-block;
+        }
+
+        @include small {
+            padding: 0;
+
+            &::before {
+                left: -16px;
+            }
+            &::before, &::after {
+                // margin-top: 12px;
+            }
+        }
     }
     .standfirst {
-        font-weight: $medium;
+        font-weight: bold;
         margin-top: 0;
         margin-bottom: 80px;
         max-width: 750px;
+    }
+
+    .tags {
+        padding: 0;
+        padding-top: 175px;
+        @include small {
+            text-align: center;
+        }
+
+        h6 {
+            display: inline;
+            list-style-type: none;
+            font-weight: normal;
+            &:first-child {
+                // margin-right: 10px;
+                font-weight: bold;
+                &::after {
+                    content: '|';
+                }
+                @include small {
+                    display: block;
+                    &::after {
+                        content: "";
+                    }
+                }
+            }
+            &:not(:first-child):not(:last-child)::after {
+                content: ',';
+                margin-left: -5px;
+                margin-right: 10px;
+            }
+        }
     }
     .content {
         display: block;
         max-width: 750px;
         text-justify: left;
-        font-weight: $light;
+        font-weight: normal;
+        padding-bottom: 60px;
 
         img {
             max-width: 650px;
@@ -116,15 +223,22 @@ ol.stories-list {
 
         h1 {
             font-size: 1.2em;
-            font-weight: $medium;
+            font-weight: bold;
             margin-top: 100px;
         }
 
         a[href] {
-            font-weight: $book;
+            font-weight: bold;
+            @include alt-font;
+            font-size: .7em;
+
+            &::after {
+                margin-top: -8px;
+            }
+
         }
 
-        .block-img {
+        .block-img, [data-oembed], p.pre {
             position: relative;
             margin: 30px 0;
         }
@@ -134,6 +248,10 @@ ol.stories-list {
             line-height: 1.6em;
             padding-right: 30%;
             position: relative;
+
+            &.hasCaption {
+                margin-bottom: 0;
+            }
 
             &::before {
                 content: "\201C";
@@ -215,19 +333,27 @@ ol.stories-list {
                     z-index: 5;
                 }
             }
+            .mini-gallery img {
+                margin-right: 60px;
+                margin-left: 60px;
+            }
         }
         .caption {
-            text-shadow: 1px 1px 3px rgba($primary, .5), -1px -1px 3px rgba($primary, .5), 1px -1px 3px rgba($primary, .5), -1px 1px 3px rgba($primary, .5);
+            text-shadow: 1px 1px 7px rgba($primary, 1), -1px -1px 7px rgba($primary, 1), 1px -1px 7px rgba($primary, 1), -1px 1px 7px rgba($primary, 1);
         }
         .gallery-arrows {
             position: absolute;
             width: 200px;
             bottom: 50px;
             // font-style: italic;
-            // font-weight: $book;
+            // font-weight: normal;
             left: -100px;
             font-size: .8em;
             line-height: 160%;
+
+            .caption {
+                pointer-events: none;
+            }
 
             a {
                 font-size: 1.4em;
@@ -241,6 +367,51 @@ ol.stories-list {
             .gallery-count {
                 font-size: 1.4em;
                 margin-left: 10px;
+            }
+        }
+    }
+
+    .next {
+        position: relative;
+        max-width: 500px;
+        margin: 160px 0;
+        h1 {
+            font-size: 2.3em;
+            font-weight: bold;
+            margin: 0;
+            position: relative;
+
+            &::after {
+                content: ' \2192';
+                // position: absolute;
+                // margin-left: 10px;
+                display: inline-block;
+            }
+        }
+        img {
+            position: absolute;
+            right: 0;
+            left: auto;
+            top: -70px;
+            height: 310px;
+            z-index: -1;
+            opacity: .3;
+            
+            @include small {
+                height: 30vh;
+                top: -2vh;
+                z-index: 0;
+                right: 50%;
+                transform: translateX(50%);
+            }
+        }
+
+        &:hover {
+            h1::after {
+                margin-left: 30px !important;
+            }
+            img {
+                transform: scale(1.05) !important;
             }
         }
     }
