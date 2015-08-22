@@ -22,8 +22,14 @@ section
     p
         a.back ui-sref="parent.home" &larr; Back
 
+    ul.quotes
+        li.see See the Case Study &rarr;
+        li.no-link ng-repeat="quote in quotes" ng-class="{'show': index == $index}" ui-sref="parent.story({id: quote.id})"
+            h3.testimonial {{quote.words}}
+            h6.source {{quote.source}}
 
-    hr 
+
+    / hr 
     p.social
         | See my professional profile
         br
@@ -36,7 +42,7 @@ section
         | My pretentious photos
         br
         a target="_blank" href="http://instagram.com/samtgarson" Instagram
-    p.social
-        | My writing
-        br
-        a target="_blank" href="http://medium.com/@samtgarson" Medium
+    / p.social
+    /     | My writing
+    /     br
+        / a target="_blank" href="http://medium.com/@samtgarson" Medium

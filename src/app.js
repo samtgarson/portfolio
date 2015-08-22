@@ -74,9 +74,7 @@ angular.module('app', [
             };
             $state.go(states[$state.current.name]);
         };
-        $scope.scrollToTop = function() {
-            scrollUp;
-        };
+        $scope.scrollToTop = scrollUp;
 
         function scrollUp() {
             var st = $("html").scrollTop() > 0 ? $("html").scrollTop() : $("body").scrollTop() ? $("body").scrollTop() : 0;

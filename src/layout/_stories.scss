@@ -75,6 +75,45 @@ ol.stories-list {
         }
     }
 }
+h6.source, .content h6.caption {
+    &::before {
+        content: "—";
+    }     
+}
+h3.testimonial {
+    margin: 0;
+    font-size: 1.5em;
+    line-height: 1.6em;
+    padding-right: 30%;
+    position: relative;
+
+    &::before {
+        content: "\201C";
+        left: -20px;
+        margin-top: 5px;
+        font-size: 1.5em;
+        position: absolute;
+    }
+
+    &::after {
+        content: "\201D";
+        font-size: 1.5em;
+        position: absolute;
+        margin-top: 0px;
+        display: inline-block;
+    }
+
+    @include small {
+        padding: 0;
+
+        &::before {
+            left: -16px;
+        }
+        &::before, &::after {
+            // margin-top: 12px;
+        }
+    }
+}
 .story {
     ui-view.main::before {
         content: '';
@@ -131,45 +170,6 @@ ol.stories-list {
         left: -20vw;
         top: -15vh;
         z-index: -1;
-    }
-    h6.source, .content h6.caption {
-        &::before {
-            content: "—";
-        }     
-    }
-    h3.testimonial {
-        margin: 0;
-        font-size: 1.5em;
-        line-height: 1.6em;
-        padding-right: 30%;
-        position: relative;
-
-        &::before {
-            content: "\201C";
-            left: -20px;
-            margin-top: 5px;
-            font-size: 1.5em;
-            position: absolute;
-        }
-
-        &::after {
-            content: "\201D";
-            font-size: 1.5em;
-            position: absolute;
-            margin-top: 0px;
-            display: inline-block;
-        }
-
-        @include small {
-            padding: 0;
-
-            &::before {
-                left: -16px;
-            }
-            &::before, &::after {
-                // margin-top: 12px;
-            }
-        }
     }
     .standfirst {
         font-weight: bold;
