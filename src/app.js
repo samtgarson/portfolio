@@ -8,6 +8,8 @@ angular.module('app', [
     'prismic.io',
     'angularMoment',
     'ngScroll',
+    'angulartics', 
+    'angulartics.google.analytics',
 
     // App
     'templates',

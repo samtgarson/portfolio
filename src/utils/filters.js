@@ -237,7 +237,7 @@ angular.module('filters', [])
             }
         };
     })
-    .directive('scrollable', function(scroll){
+    .directive('scrollable', function(scroll, $analytics){
         // Runs during compile
         return {
             templateUrl: "utils/scrollable.html",
@@ -245,8 +245,30 @@ angular.module('filters', [])
             link: function(scope, el, attrs) {
                 scope.perc = 0;
                 scroll.bind();
+                events = {
+                    '25': false,
+                    '50': false,
+                    '75': false,
+                    '100': false
+                };
                 scope.$on('scroll', function(event, data){
                     scope.perc = data.y / data.scrollHeight * 100;
+                    if (scope.perc >= 25 && scope.perc < 50 && !events['25']) {
+                        events['25'] = true;
+                        $analytics.eventTrack('storyScroll', {  label: 'label', value: 25 });
+                    }
+                    if (scope.perc >= 50 && scope.perc < 75 && !events['50']) {
+                        events['50'] = true;
+                        $analytics.eventTrack('storyScroll', {  label: 'label', value: 50 });
+                    }
+                    if (scope.perc >= 75 && scope.perc < 100 && !events['75']) {
+                        events['75'] = true;
+                        $analytics.eventTrack('storyScroll', {  label: 'label', value: 75 });
+                    }
+                    if (scope.perc == 100 && !events['100']) {
+                        events['10'] = true;
+                        $analytics.eventTrack('storyScroll', {  label: 'label', value: 100 });
+                    }
                 });
             }
         };

@@ -16381,943 +16381,2053 @@
 })(window, window.angular);
 (function(window, angular, undefined) {
     "use strict";
-    angular.module("ngAnimate", [ "ng" ]).directive("ngAnimateChildren", function() {
-        var NG_ANIMATE_CHILDREN = "$$ngAnimateChildren";
+    var noop = angular.noop;
+    var extend = angular.extend;
+    var jqLite = angular.element;
+    var forEach = angular.forEach;
+    var isArray = angular.isArray;
+    var isString = angular.isString;
+    var isObject = angular.isObject;
+    var isUndefined = angular.isUndefined;
+    var isDefined = angular.isDefined;
+    var isFunction = angular.isFunction;
+    var isElement = angular.isElement;
+    var ELEMENT_NODE = 1;
+    var COMMENT_NODE = 8;
+    var ADD_CLASS_SUFFIX = "-add";
+    var REMOVE_CLASS_SUFFIX = "-remove";
+    var EVENT_CLASS_PREFIX = "ng-";
+    var ACTIVE_CLASS_SUFFIX = "-active";
+    var NG_ANIMATE_CLASSNAME = "ng-animate";
+    var NG_ANIMATE_CHILDREN_DATA = "$$ngAnimateChildren";
+    var CSS_PREFIX = "", TRANSITION_PROP, TRANSITIONEND_EVENT, ANIMATION_PROP, ANIMATIONEND_EVENT;
+    if (window.ontransitionend === undefined && window.onwebkittransitionend !== undefined) {
+        CSS_PREFIX = "-webkit-";
+        TRANSITION_PROP = "WebkitTransition";
+        TRANSITIONEND_EVENT = "webkitTransitionEnd transitionend";
+    } else {
+        TRANSITION_PROP = "transition";
+        TRANSITIONEND_EVENT = "transitionend";
+    }
+    if (window.onanimationend === undefined && window.onwebkitanimationend !== undefined) {
+        CSS_PREFIX = "-webkit-";
+        ANIMATION_PROP = "WebkitAnimation";
+        ANIMATIONEND_EVENT = "webkitAnimationEnd animationend";
+    } else {
+        ANIMATION_PROP = "animation";
+        ANIMATIONEND_EVENT = "animationend";
+    }
+    var DURATION_KEY = "Duration";
+    var PROPERTY_KEY = "Property";
+    var DELAY_KEY = "Delay";
+    var TIMING_KEY = "TimingFunction";
+    var ANIMATION_ITERATION_COUNT_KEY = "IterationCount";
+    var ANIMATION_PLAYSTATE_KEY = "PlayState";
+    var SAFE_FAST_FORWARD_DURATION_VALUE = 9999;
+    var ANIMATION_DELAY_PROP = ANIMATION_PROP + DELAY_KEY;
+    var ANIMATION_DURATION_PROP = ANIMATION_PROP + DURATION_KEY;
+    var TRANSITION_DELAY_PROP = TRANSITION_PROP + DELAY_KEY;
+    var TRANSITION_DURATION_PROP = TRANSITION_PROP + DURATION_KEY;
+    var isPromiseLike = function(p) {
+        return p && p.then ? true : false;
+    };
+    function assertArg(arg, name, reason) {
+        if (!arg) {
+            throw ngMinErr("areq", "Argument '{0}' is {1}", name || "?", reason || "required");
+        }
+        return arg;
+    }
+    function mergeClasses(a, b) {
+        if (!a && !b) return "";
+        if (!a) return b;
+        if (!b) return a;
+        if (isArray(a)) a = a.join(" ");
+        if (isArray(b)) b = b.join(" ");
+        return a + " " + b;
+    }
+    function packageStyles(options) {
+        var styles = {};
+        if (options && (options.to || options.from)) {
+            styles.to = options.to;
+            styles.from = options.from;
+        }
+        return styles;
+    }
+    function pendClasses(classes, fix, isPrefix) {
+        var className = "";
+        classes = isArray(classes) ? classes : classes && isString(classes) && classes.length ? classes.split(/\s+/) : [];
+        forEach(classes, function(klass, i) {
+            if (klass && klass.length > 0) {
+                className += i > 0 ? " " : "";
+                className += isPrefix ? fix + klass : klass + fix;
+            }
+        });
+        return className;
+    }
+    function removeFromArray(arr, val) {
+        var index = arr.indexOf(val);
+        if (val >= 0) {
+            arr.splice(index, 1);
+        }
+    }
+    function stripCommentsFromElement(element) {
+        if (element instanceof jqLite) {
+            switch (element.length) {
+              case 0:
+                return [];
+                break;
+
+              case 1:
+                if (element[0].nodeType === ELEMENT_NODE) {
+                    return element;
+                }
+                break;
+
+              default:
+                return jqLite(extractElementNode(element));
+                break;
+            }
+        }
+        if (element.nodeType === ELEMENT_NODE) {
+            return jqLite(element);
+        }
+    }
+    function extractElementNode(element) {
+        if (!element[0]) return element;
+        for (var i = 0; i < element.length; i++) {
+            var elm = element[i];
+            if (elm.nodeType == ELEMENT_NODE) {
+                return elm;
+            }
+        }
+    }
+    function $$addClass($$jqLite, element, className) {
+        forEach(element, function(elm) {
+            $$jqLite.addClass(elm, className);
+        });
+    }
+    function $$removeClass($$jqLite, element, className) {
+        forEach(element, function(elm) {
+            $$jqLite.removeClass(elm, className);
+        });
+    }
+    function applyAnimationClassesFactory($$jqLite) {
+        return function(element, options) {
+            if (options.addClass) {
+                $$addClass($$jqLite, element, options.addClass);
+                options.addClass = null;
+            }
+            if (options.removeClass) {
+                $$removeClass($$jqLite, element, options.removeClass);
+                options.removeClass = null;
+            }
+        };
+    }
+    function prepareAnimationOptions(options) {
+        options = options || {};
+        if (!options.$$prepared) {
+            var domOperation = options.domOperation || noop;
+            options.domOperation = function() {
+                options.$$domOperationFired = true;
+                domOperation();
+                domOperation = noop;
+            };
+            options.$$prepared = true;
+        }
+        return options;
+    }
+    function applyAnimationStyles(element, options) {
+        applyAnimationFromStyles(element, options);
+        applyAnimationToStyles(element, options);
+    }
+    function applyAnimationFromStyles(element, options) {
+        if (options.from) {
+            element.css(options.from);
+            options.from = null;
+        }
+    }
+    function applyAnimationToStyles(element, options) {
+        if (options.to) {
+            element.css(options.to);
+            options.to = null;
+        }
+    }
+    function mergeAnimationOptions(element, target, newOptions) {
+        var toAdd = (target.addClass || "") + " " + (newOptions.addClass || "");
+        var toRemove = (target.removeClass || "") + " " + (newOptions.removeClass || "");
+        var classes = resolveElementClasses(element.attr("class"), toAdd, toRemove);
+        if (newOptions.preparationClasses) {
+            target.preparationClasses = concatWithSpace(newOptions.preparationClasses, target.preparationClasses);
+            delete newOptions.preparationClasses;
+        }
+        var realDomOperation = target.domOperation !== noop ? target.domOperation : null;
+        extend(target, newOptions);
+        if (realDomOperation) {
+            target.domOperation = realDomOperation;
+        }
+        if (classes.addClass) {
+            target.addClass = classes.addClass;
+        } else {
+            target.addClass = null;
+        }
+        if (classes.removeClass) {
+            target.removeClass = classes.removeClass;
+        } else {
+            target.removeClass = null;
+        }
+        return target;
+    }
+    function resolveElementClasses(existing, toAdd, toRemove) {
+        var ADD_CLASS = 1;
+        var REMOVE_CLASS = -1;
+        var flags = {};
+        existing = splitClassesToLookup(existing);
+        toAdd = splitClassesToLookup(toAdd);
+        forEach(toAdd, function(value, key) {
+            flags[key] = ADD_CLASS;
+        });
+        toRemove = splitClassesToLookup(toRemove);
+        forEach(toRemove, function(value, key) {
+            flags[key] = flags[key] === ADD_CLASS ? null : REMOVE_CLASS;
+        });
+        var classes = {
+            addClass: "",
+            removeClass: ""
+        };
+        forEach(flags, function(val, klass) {
+            var prop, allow;
+            if (val === ADD_CLASS) {
+                prop = "addClass";
+                allow = !existing[klass];
+            } else if (val === REMOVE_CLASS) {
+                prop = "removeClass";
+                allow = existing[klass];
+            }
+            if (allow) {
+                if (classes[prop].length) {
+                    classes[prop] += " ";
+                }
+                classes[prop] += klass;
+            }
+        });
+        function splitClassesToLookup(classes) {
+            if (isString(classes)) {
+                classes = classes.split(" ");
+            }
+            var obj = {};
+            forEach(classes, function(klass) {
+                if (klass.length) {
+                    obj[klass] = true;
+                }
+            });
+            return obj;
+        }
+        return classes;
+    }
+    function getDomNode(element) {
+        return element instanceof angular.element ? element[0] : element;
+    }
+    function applyGeneratedPreparationClasses(element, event, options) {
+        var classes = "";
+        if (event) {
+            classes = pendClasses(event, EVENT_CLASS_PREFIX, true);
+        }
+        if (options.addClass) {
+            classes = concatWithSpace(classes, pendClasses(options.addClass, ADD_CLASS_SUFFIX));
+        }
+        if (options.removeClass) {
+            classes = concatWithSpace(classes, pendClasses(options.removeClass, REMOVE_CLASS_SUFFIX));
+        }
+        if (classes.length) {
+            options.preparationClasses = classes;
+            element.addClass(classes);
+        }
+    }
+    function clearGeneratedClasses(element, options) {
+        if (options.preparationClasses) {
+            element.removeClass(options.preparationClasses);
+            options.preparationClasses = null;
+        }
+        if (options.activeClasses) {
+            element.removeClass(options.activeClasses);
+            options.activeClasses = null;
+        }
+    }
+    function blockTransitions(node, duration) {
+        var value = duration ? "-" + duration + "s" : "";
+        applyInlineStyle(node, [ TRANSITION_DELAY_PROP, value ]);
+        return [ TRANSITION_DELAY_PROP, value ];
+    }
+    function blockKeyframeAnimations(node, applyBlock) {
+        var value = applyBlock ? "paused" : "";
+        var key = ANIMATION_PROP + ANIMATION_PLAYSTATE_KEY;
+        applyInlineStyle(node, [ key, value ]);
+        return [ key, value ];
+    }
+    function applyInlineStyle(node, styleTuple) {
+        var prop = styleTuple[0];
+        var value = styleTuple[1];
+        node.style[prop] = value;
+    }
+    function concatWithSpace(a, b) {
+        if (!a) return b;
+        if (!b) return a;
+        return a + " " + b;
+    }
+    function $$BodyProvider() {
+        this.$get = [ "$document", function($document) {
+            return jqLite($document[0].body);
+        } ];
+    }
+    var $$AnimateChildrenDirective = [ function() {
         return function(scope, element, attrs) {
             var val = attrs.ngAnimateChildren;
             if (angular.isString(val) && val.length === 0) {
-                element.data(NG_ANIMATE_CHILDREN, true);
+                element.data(NG_ANIMATE_CHILDREN_DATA, true);
             } else {
-                scope.$watch(val, function(value) {
-                    element.data(NG_ANIMATE_CHILDREN, !!value);
+                attrs.$observe("ngAnimateChildren", function(value) {
+                    value = value === "on" || value === "true";
+                    element.data(NG_ANIMATE_CHILDREN_DATA, value);
                 });
             }
         };
-    }).factory("$$animateReflow", [ "$$rAF", "$document", function($$rAF, $document) {
-        var bod = $document[0].body;
-        return function(fn) {
-            return $$rAF(function() {
-                var a = bod.offsetWidth + 1;
-                fn();
-            });
-        };
-    } ]).config([ "$provide", "$animateProvider", function($provide, $animateProvider) {
-        var noop = angular.noop;
-        var forEach = angular.forEach;
-        var selectors = $animateProvider.$$selectors;
-        var ELEMENT_NODE = 1;
-        var NG_ANIMATE_STATE = "$$ngAnimateState";
-        var NG_ANIMATE_CHILDREN = "$$ngAnimateChildren";
-        var NG_ANIMATE_CLASS_NAME = "ng-animate";
-        var rootAnimateState = {
-            running: true
-        };
-        function extractElementNode(element) {
-            for (var i = 0; i < element.length; i++) {
-                var elm = element[i];
-                if (elm.nodeType == ELEMENT_NODE) {
-                    return elm;
+    } ];
+    var ONE_SECOND = 1e3;
+    var BASE_TEN = 10;
+    var ELAPSED_TIME_MAX_DECIMAL_PLACES = 3;
+    var CLOSING_TIME_BUFFER = 1.5;
+    var DETECT_CSS_PROPERTIES = {
+        transitionDuration: TRANSITION_DURATION_PROP,
+        transitionDelay: TRANSITION_DELAY_PROP,
+        transitionProperty: TRANSITION_PROP + PROPERTY_KEY,
+        animationDuration: ANIMATION_DURATION_PROP,
+        animationDelay: ANIMATION_DELAY_PROP,
+        animationIterationCount: ANIMATION_PROP + ANIMATION_ITERATION_COUNT_KEY
+    };
+    var DETECT_STAGGER_CSS_PROPERTIES = {
+        transitionDuration: TRANSITION_DURATION_PROP,
+        transitionDelay: TRANSITION_DELAY_PROP,
+        animationDuration: ANIMATION_DURATION_PROP,
+        animationDelay: ANIMATION_DELAY_PROP
+    };
+    function getCssKeyframeDurationStyle(duration) {
+        return [ ANIMATION_DURATION_PROP, duration + "s" ];
+    }
+    function getCssDelayStyle(delay, isKeyframeAnimation) {
+        var prop = isKeyframeAnimation ? ANIMATION_DELAY_PROP : TRANSITION_DELAY_PROP;
+        return [ prop, delay + "s" ];
+    }
+    function computeCssStyles($window, element, properties) {
+        var styles = Object.create(null);
+        var detectedStyles = $window.getComputedStyle(element) || {};
+        forEach(properties, function(formalStyleName, actualStyleName) {
+            var val = detectedStyles[formalStyleName];
+            if (val) {
+                var c = val.charAt(0);
+                if (c === "-" || c === "+" || c >= 0) {
+                    val = parseMaxTime(val);
+                }
+                if (val === 0) {
+                    val = null;
+                }
+                styles[actualStyleName] = val;
+            }
+        });
+        return styles;
+    }
+    function parseMaxTime(str) {
+        var maxValue = 0;
+        var values = str.split(/\s*,\s*/);
+        forEach(values, function(value) {
+            if (value.charAt(value.length - 1) == "s") {
+                value = value.substring(0, value.length - 1);
+            }
+            value = parseFloat(value) || 0;
+            maxValue = maxValue ? Math.max(value, maxValue) : value;
+        });
+        return maxValue;
+    }
+    function truthyTimingValue(val) {
+        return val === 0 || val != null;
+    }
+    function getCssTransitionDurationStyle(duration, applyOnlyDuration) {
+        var style = TRANSITION_PROP;
+        var value = duration + "s";
+        if (applyOnlyDuration) {
+            style += DURATION_KEY;
+        } else {
+            value += " linear all";
+        }
+        return [ style, value ];
+    }
+    function createLocalCacheLookup() {
+        var cache = Object.create(null);
+        return {
+            flush: function() {
+                cache = Object.create(null);
+            },
+            count: function(key) {
+                var entry = cache[key];
+                return entry ? entry.total : 0;
+            },
+            get: function(key) {
+                var entry = cache[key];
+                return entry && entry.value;
+            },
+            put: function(key, value) {
+                if (!cache[key]) {
+                    cache[key] = {
+                        total: 1,
+                        value: value
+                    };
+                } else {
+                    cache[key].total++;
                 }
             }
+        };
+    }
+    var $AnimateCssProvider = [ "$animateProvider", function($animateProvider) {
+        var gcsLookup = createLocalCacheLookup();
+        var gcsStaggerLookup = createLocalCacheLookup();
+        this.$get = [ "$window", "$$jqLite", "$$AnimateRunner", "$timeout", "$$forceReflow", "$sniffer", "$$rAF", function($window, $$jqLite, $$AnimateRunner, $timeout, $$forceReflow, $sniffer, $$rAF) {
+            var applyAnimationClasses = applyAnimationClassesFactory($$jqLite);
+            var parentCounter = 0;
+            function gcsHashFn(node, extraClasses) {
+                var KEY = "$$ngAnimateParentKey";
+                var parentNode = node.parentNode;
+                var parentID = parentNode[KEY] || (parentNode[KEY] = ++parentCounter);
+                return parentID + "-" + node.getAttribute("class") + "-" + extraClasses;
+            }
+            function computeCachedCssStyles(node, className, cacheKey, properties) {
+                var timings = gcsLookup.get(cacheKey);
+                if (!timings) {
+                    timings = computeCssStyles($window, node, properties);
+                    if (timings.animationIterationCount === "infinite") {
+                        timings.animationIterationCount = 1;
+                    }
+                }
+                gcsLookup.put(cacheKey, timings);
+                return timings;
+            }
+            function computeCachedCssStaggerStyles(node, className, cacheKey, properties) {
+                var stagger;
+                if (gcsLookup.count(cacheKey) > 0) {
+                    stagger = gcsStaggerLookup.get(cacheKey);
+                    if (!stagger) {
+                        var staggerClassName = pendClasses(className, "-stagger");
+                        $$jqLite.addClass(node, staggerClassName);
+                        stagger = computeCssStyles($window, node, properties);
+                        stagger.animationDuration = Math.max(stagger.animationDuration, 0);
+                        stagger.transitionDuration = Math.max(stagger.transitionDuration, 0);
+                        $$jqLite.removeClass(node, staggerClassName);
+                        gcsStaggerLookup.put(cacheKey, stagger);
+                    }
+                }
+                return stagger || {};
+            }
+            var cancelLastRAFRequest;
+            var rafWaitQueue = [];
+            function waitUntilQuiet(callback) {
+                if (cancelLastRAFRequest) {
+                    cancelLastRAFRequest();
+                }
+                rafWaitQueue.push(callback);
+                cancelLastRAFRequest = $$rAF(function() {
+                    cancelLastRAFRequest = null;
+                    gcsLookup.flush();
+                    gcsStaggerLookup.flush();
+                    var pageWidth = $$forceReflow();
+                    for (var i = 0; i < rafWaitQueue.length; i++) {
+                        rafWaitQueue[i](pageWidth);
+                    }
+                    rafWaitQueue.length = 0;
+                });
+            }
+            return init;
+            function computeTimings(node, className, cacheKey) {
+                var timings = computeCachedCssStyles(node, className, cacheKey, DETECT_CSS_PROPERTIES);
+                var aD = timings.animationDelay;
+                var tD = timings.transitionDelay;
+                timings.maxDelay = aD && tD ? Math.max(aD, tD) : aD || tD;
+                timings.maxDuration = Math.max(timings.animationDuration * timings.animationIterationCount, timings.transitionDuration);
+                return timings;
+            }
+            function init(element, options) {
+                var node = getDomNode(element);
+                if (!node || !node.parentNode) {
+                    return closeAndReturnNoopAnimator();
+                }
+                options = prepareAnimationOptions(options);
+                var temporaryStyles = [];
+                var classes = element.attr("class");
+                var styles = packageStyles(options);
+                var animationClosed;
+                var animationPaused;
+                var animationCompleted;
+                var runner;
+                var runnerHost;
+                var maxDelay;
+                var maxDelayTime;
+                var maxDuration;
+                var maxDurationTime;
+                if (options.duration === 0 || !$sniffer.animations && !$sniffer.transitions) {
+                    return closeAndReturnNoopAnimator();
+                }
+                var method = options.event && isArray(options.event) ? options.event.join(" ") : options.event;
+                var isStructural = method && options.structural;
+                var structuralClassName = "";
+                var addRemoveClassName = "";
+                if (isStructural) {
+                    structuralClassName = pendClasses(method, EVENT_CLASS_PREFIX, true);
+                } else if (method) {
+                    structuralClassName = method;
+                }
+                if (options.addClass) {
+                    addRemoveClassName += pendClasses(options.addClass, ADD_CLASS_SUFFIX);
+                }
+                if (options.removeClass) {
+                    if (addRemoveClassName.length) {
+                        addRemoveClassName += " ";
+                    }
+                    addRemoveClassName += pendClasses(options.removeClass, REMOVE_CLASS_SUFFIX);
+                }
+                if (options.applyClassesEarly && addRemoveClassName.length) {
+                    applyAnimationClasses(element, options);
+                    addRemoveClassName = "";
+                }
+                var preparationClasses = [ structuralClassName, addRemoveClassName ].join(" ").trim();
+                var fullClassName = classes + " " + preparationClasses;
+                var activeClasses = pendClasses(preparationClasses, ACTIVE_CLASS_SUFFIX);
+                var hasToStyles = styles.to && Object.keys(styles.to).length > 0;
+                var containsKeyframeAnimation = (options.keyframeStyle || "").length > 0;
+                if (!containsKeyframeAnimation && !hasToStyles && !preparationClasses) {
+                    return closeAndReturnNoopAnimator();
+                }
+                var cacheKey, stagger;
+                if (options.stagger > 0) {
+                    var staggerVal = parseFloat(options.stagger);
+                    stagger = {
+                        transitionDelay: staggerVal,
+                        animationDelay: staggerVal,
+                        transitionDuration: 0,
+                        animationDuration: 0
+                    };
+                } else {
+                    cacheKey = gcsHashFn(node, fullClassName);
+                    stagger = computeCachedCssStaggerStyles(node, preparationClasses, cacheKey, DETECT_STAGGER_CSS_PROPERTIES);
+                }
+                if (!options.$$skipPreparationClasses) {
+                    $$jqLite.addClass(element, preparationClasses);
+                }
+                var applyOnlyDuration;
+                if (options.transitionStyle) {
+                    var transitionStyle = [ TRANSITION_PROP, options.transitionStyle ];
+                    applyInlineStyle(node, transitionStyle);
+                    temporaryStyles.push(transitionStyle);
+                }
+                if (options.duration >= 0) {
+                    applyOnlyDuration = node.style[TRANSITION_PROP].length > 0;
+                    var durationStyle = getCssTransitionDurationStyle(options.duration, applyOnlyDuration);
+                    applyInlineStyle(node, durationStyle);
+                    temporaryStyles.push(durationStyle);
+                }
+                if (options.keyframeStyle) {
+                    var keyframeStyle = [ ANIMATION_PROP, options.keyframeStyle ];
+                    applyInlineStyle(node, keyframeStyle);
+                    temporaryStyles.push(keyframeStyle);
+                }
+                var itemIndex = stagger ? options.staggerIndex >= 0 ? options.staggerIndex : gcsLookup.count(cacheKey) : 0;
+                var isFirst = itemIndex === 0;
+                if (isFirst && !options.skipBlocking) {
+                    blockTransitions(node, SAFE_FAST_FORWARD_DURATION_VALUE);
+                }
+                var timings = computeTimings(node, fullClassName, cacheKey);
+                var relativeDelay = timings.maxDelay;
+                maxDelay = Math.max(relativeDelay, 0);
+                maxDuration = timings.maxDuration;
+                var flags = {};
+                flags.hasTransitions = timings.transitionDuration > 0;
+                flags.hasAnimations = timings.animationDuration > 0;
+                flags.hasTransitionAll = flags.hasTransitions && timings.transitionProperty == "all";
+                flags.applyTransitionDuration = hasToStyles && (flags.hasTransitions && !flags.hasTransitionAll || flags.hasAnimations && !flags.hasTransitions);
+                flags.applyAnimationDuration = options.duration && flags.hasAnimations;
+                flags.applyTransitionDelay = truthyTimingValue(options.delay) && (flags.applyTransitionDuration || flags.hasTransitions);
+                flags.applyAnimationDelay = truthyTimingValue(options.delay) && flags.hasAnimations;
+                flags.recalculateTimingStyles = addRemoveClassName.length > 0;
+                if (flags.applyTransitionDuration || flags.applyAnimationDuration) {
+                    maxDuration = options.duration ? parseFloat(options.duration) : maxDuration;
+                    if (flags.applyTransitionDuration) {
+                        flags.hasTransitions = true;
+                        timings.transitionDuration = maxDuration;
+                        applyOnlyDuration = node.style[TRANSITION_PROP + PROPERTY_KEY].length > 0;
+                        temporaryStyles.push(getCssTransitionDurationStyle(maxDuration, applyOnlyDuration));
+                    }
+                    if (flags.applyAnimationDuration) {
+                        flags.hasAnimations = true;
+                        timings.animationDuration = maxDuration;
+                        temporaryStyles.push(getCssKeyframeDurationStyle(maxDuration));
+                    }
+                }
+                if (maxDuration === 0 && !flags.recalculateTimingStyles) {
+                    return closeAndReturnNoopAnimator();
+                }
+                if (options.duration == null && timings.transitionDuration > 0) {
+                    flags.recalculateTimingStyles = flags.recalculateTimingStyles || isFirst;
+                }
+                maxDelayTime = maxDelay * ONE_SECOND;
+                maxDurationTime = maxDuration * ONE_SECOND;
+                if (!options.skipBlocking) {
+                    flags.blockTransition = timings.transitionDuration > 0;
+                    flags.blockKeyframeAnimation = timings.animationDuration > 0 && stagger.animationDelay > 0 && stagger.animationDuration === 0;
+                }
+                applyAnimationFromStyles(element, options);
+                if (flags.blockTransition || flags.blockKeyframeAnimation) {
+                    applyBlocking(maxDuration);
+                } else if (!options.skipBlocking) {
+                    blockTransitions(node, false);
+                }
+                return {
+                    $$willAnimate: true,
+                    end: endFn,
+                    start: function() {
+                        if (animationClosed) return;
+                        runnerHost = {
+                            end: endFn,
+                            cancel: cancelFn,
+                            resume: null,
+                            pause: null
+                        };
+                        runner = new $$AnimateRunner(runnerHost);
+                        waitUntilQuiet(start);
+                        return runner;
+                    }
+                };
+                function endFn() {
+                    close();
+                }
+                function cancelFn() {
+                    close(true);
+                }
+                function close(rejected) {
+                    if (animationClosed || animationCompleted && animationPaused) return;
+                    animationClosed = true;
+                    animationPaused = false;
+                    if (!options.$$skipPreparationClasses) {
+                        $$jqLite.removeClass(element, preparationClasses);
+                    }
+                    $$jqLite.removeClass(element, activeClasses);
+                    blockKeyframeAnimations(node, false);
+                    blockTransitions(node, false);
+                    forEach(temporaryStyles, function(entry) {
+                        node.style[entry[0]] = "";
+                    });
+                    applyAnimationClasses(element, options);
+                    applyAnimationStyles(element, options);
+                    if (options.onDone) {
+                        options.onDone();
+                    }
+                    if (runner) {
+                        runner.complete(!rejected);
+                    }
+                }
+                function applyBlocking(duration) {
+                    if (flags.blockTransition) {
+                        blockTransitions(node, duration);
+                    }
+                    if (flags.blockKeyframeAnimation) {
+                        blockKeyframeAnimations(node, !!duration);
+                    }
+                }
+                function closeAndReturnNoopAnimator() {
+                    runner = new $$AnimateRunner({
+                        end: endFn,
+                        cancel: cancelFn
+                    });
+                    close();
+                    return {
+                        $$willAnimate: false,
+                        start: function() {
+                            return runner;
+                        },
+                        end: endFn
+                    };
+                }
+                function start() {
+                    if (animationClosed) return;
+                    if (!node.parentNode) {
+                        close();
+                        return;
+                    }
+                    var startTime, events = [];
+                    var playPause = function(playAnimation) {
+                        if (!animationCompleted) {
+                            animationPaused = !playAnimation;
+                            if (timings.animationDuration) {
+                                var value = blockKeyframeAnimations(node, animationPaused);
+                                animationPaused ? temporaryStyles.push(value) : removeFromArray(temporaryStyles, value);
+                            }
+                        } else if (animationPaused && playAnimation) {
+                            animationPaused = false;
+                            close();
+                        }
+                    };
+                    var maxStagger = itemIndex > 0 && (timings.transitionDuration && stagger.transitionDuration === 0 || timings.animationDuration && stagger.animationDuration === 0) && Math.max(stagger.animationDelay, stagger.transitionDelay);
+                    if (maxStagger) {
+                        $timeout(triggerAnimationStart, Math.floor(maxStagger * itemIndex * ONE_SECOND), false);
+                    } else {
+                        triggerAnimationStart();
+                    }
+                    runnerHost.resume = function() {
+                        playPause(true);
+                    };
+                    runnerHost.pause = function() {
+                        playPause(false);
+                    };
+                    function triggerAnimationStart() {
+                        if (animationClosed) return;
+                        applyBlocking(false);
+                        forEach(temporaryStyles, function(entry) {
+                            var key = entry[0];
+                            var value = entry[1];
+                            node.style[key] = value;
+                        });
+                        applyAnimationClasses(element, options);
+                        $$jqLite.addClass(element, activeClasses);
+                        if (flags.recalculateTimingStyles) {
+                            fullClassName = node.className + " " + preparationClasses;
+                            cacheKey = gcsHashFn(node, fullClassName);
+                            timings = computeTimings(node, fullClassName, cacheKey);
+                            relativeDelay = timings.maxDelay;
+                            maxDelay = Math.max(relativeDelay, 0);
+                            maxDuration = timings.maxDuration;
+                            if (maxDuration === 0) {
+                                close();
+                                return;
+                            }
+                            flags.hasTransitions = timings.transitionDuration > 0;
+                            flags.hasAnimations = timings.animationDuration > 0;
+                        }
+                        if (flags.applyTransitionDelay || flags.applyAnimationDelay) {
+                            relativeDelay = typeof options.delay !== "boolean" && truthyTimingValue(options.delay) ? parseFloat(options.delay) : relativeDelay;
+                            maxDelay = Math.max(relativeDelay, 0);
+                            var delayStyle;
+                            if (flags.applyTransitionDelay) {
+                                timings.transitionDelay = relativeDelay;
+                                delayStyle = getCssDelayStyle(relativeDelay);
+                                temporaryStyles.push(delayStyle);
+                                node.style[delayStyle[0]] = delayStyle[1];
+                            }
+                            if (flags.applyAnimationDelay) {
+                                timings.animationDelay = relativeDelay;
+                                delayStyle = getCssDelayStyle(relativeDelay, true);
+                                temporaryStyles.push(delayStyle);
+                                node.style[delayStyle[0]] = delayStyle[1];
+                            }
+                        }
+                        maxDelayTime = maxDelay * ONE_SECOND;
+                        maxDurationTime = maxDuration * ONE_SECOND;
+                        if (options.easing) {
+                            var easeProp, easeVal = options.easing;
+                            if (flags.hasTransitions) {
+                                easeProp = TRANSITION_PROP + TIMING_KEY;
+                                temporaryStyles.push([ easeProp, easeVal ]);
+                                node.style[easeProp] = easeVal;
+                            }
+                            if (flags.hasAnimations) {
+                                easeProp = ANIMATION_PROP + TIMING_KEY;
+                                temporaryStyles.push([ easeProp, easeVal ]);
+                                node.style[easeProp] = easeVal;
+                            }
+                        }
+                        if (timings.transitionDuration) {
+                            events.push(TRANSITIONEND_EVENT);
+                        }
+                        if (timings.animationDuration) {
+                            events.push(ANIMATIONEND_EVENT);
+                        }
+                        startTime = Date.now();
+                        element.on(events.join(" "), onAnimationProgress);
+                        $timeout(onAnimationExpired, maxDelayTime + CLOSING_TIME_BUFFER * maxDurationTime, false);
+                        applyAnimationToStyles(element, options);
+                    }
+                    function onAnimationExpired() {
+                        close();
+                    }
+                    function onAnimationProgress(event) {
+                        event.stopPropagation();
+                        var ev = event.originalEvent || event;
+                        var timeStamp = ev.$manualTimeStamp || ev.timeStamp || Date.now();
+                        var elapsedTime = parseFloat(ev.elapsedTime.toFixed(ELAPSED_TIME_MAX_DECIMAL_PLACES));
+                        if (Math.max(timeStamp - startTime, 0) >= maxDelayTime && elapsedTime >= maxDuration) {
+                            animationCompleted = true;
+                            close();
+                        }
+                    }
+                }
+            }
+        } ];
+    } ];
+    var $$AnimateCssDriverProvider = [ "$$animationProvider", function($$animationProvider) {
+        $$animationProvider.drivers.push("$$animateCssDriver");
+        var NG_ANIMATE_SHIM_CLASS_NAME = "ng-animate-shim";
+        var NG_ANIMATE_ANCHOR_CLASS_NAME = "ng-anchor";
+        var NG_OUT_ANCHOR_CLASS_NAME = "ng-anchor-out";
+        var NG_IN_ANCHOR_CLASS_NAME = "ng-anchor-in";
+        this.$get = [ "$animateCss", "$rootScope", "$$AnimateRunner", "$rootElement", "$$body", "$sniffer", "$$jqLite", function($animateCss, $rootScope, $$AnimateRunner, $rootElement, $$body, $sniffer, $$jqLite) {
+            if (!$sniffer.animations && !$sniffer.transitions) return noop;
+            var bodyNode = getDomNode($$body);
+            var rootNode = getDomNode($rootElement);
+            var rootBodyElement = jqLite(bodyNode.parentNode === rootNode ? bodyNode : rootNode);
+            var applyAnimationClasses = applyAnimationClassesFactory($$jqLite);
+            return function initDriverFn(animationDetails, onBeforeClassesAppliedCb) {
+                return animationDetails.from && animationDetails.to ? prepareFromToAnchorAnimation(animationDetails.from, animationDetails.to, animationDetails.classes, animationDetails.anchors) : prepareRegularAnimation(animationDetails, onBeforeClassesAppliedCb);
+            };
+            function filterCssClasses(classes) {
+                return classes.replace(/\bng-\S+\b/g, "");
+            }
+            function getUniqueValues(a, b) {
+                if (isString(a)) a = a.split(" ");
+                if (isString(b)) b = b.split(" ");
+                return a.filter(function(val) {
+                    return b.indexOf(val) === -1;
+                }).join(" ");
+            }
+            function prepareAnchoredAnimation(classes, outAnchor, inAnchor) {
+                var clone = jqLite(getDomNode(outAnchor).cloneNode(true));
+                var startingClasses = filterCssClasses(getClassVal(clone));
+                outAnchor.addClass(NG_ANIMATE_SHIM_CLASS_NAME);
+                inAnchor.addClass(NG_ANIMATE_SHIM_CLASS_NAME);
+                clone.addClass(NG_ANIMATE_ANCHOR_CLASS_NAME);
+                rootBodyElement.append(clone);
+                var animatorIn, animatorOut = prepareOutAnimation();
+                if (!animatorOut) {
+                    animatorIn = prepareInAnimation();
+                    if (!animatorIn) {
+                        return end();
+                    }
+                }
+                var startingAnimator = animatorOut || animatorIn;
+                return {
+                    start: function() {
+                        var runner;
+                        var currentAnimation = startingAnimator.start();
+                        currentAnimation.done(function() {
+                            currentAnimation = null;
+                            if (!animatorIn) {
+                                animatorIn = prepareInAnimation();
+                                if (animatorIn) {
+                                    currentAnimation = animatorIn.start();
+                                    currentAnimation.done(function() {
+                                        currentAnimation = null;
+                                        end();
+                                        runner.complete();
+                                    });
+                                    return currentAnimation;
+                                }
+                            }
+                            end();
+                            runner.complete();
+                        });
+                        runner = new $$AnimateRunner({
+                            end: endFn,
+                            cancel: endFn
+                        });
+                        return runner;
+                        function endFn() {
+                            if (currentAnimation) {
+                                currentAnimation.end();
+                            }
+                        }
+                    }
+                };
+                function calculateAnchorStyles(anchor) {
+                    var styles = {};
+                    var coords = getDomNode(anchor).getBoundingClientRect();
+                    forEach([ "width", "height", "top", "left" ], function(key) {
+                        var value = coords[key];
+                        switch (key) {
+                          case "top":
+                            value += bodyNode.scrollTop;
+                            break;
+
+                          case "left":
+                            value += bodyNode.scrollLeft;
+                            break;
+                        }
+                        styles[key] = Math.floor(value) + "px";
+                    });
+                    return styles;
+                }
+                function prepareOutAnimation() {
+                    var animator = $animateCss(clone, {
+                        addClass: NG_OUT_ANCHOR_CLASS_NAME,
+                        delay: true,
+                        from: calculateAnchorStyles(outAnchor)
+                    });
+                    return animator.$$willAnimate ? animator : null;
+                }
+                function getClassVal(element) {
+                    return element.attr("class") || "";
+                }
+                function prepareInAnimation() {
+                    var endingClasses = filterCssClasses(getClassVal(inAnchor));
+                    var toAdd = getUniqueValues(endingClasses, startingClasses);
+                    var toRemove = getUniqueValues(startingClasses, endingClasses);
+                    var animator = $animateCss(clone, {
+                        to: calculateAnchorStyles(inAnchor),
+                        addClass: NG_IN_ANCHOR_CLASS_NAME + " " + toAdd,
+                        removeClass: NG_OUT_ANCHOR_CLASS_NAME + " " + toRemove,
+                        delay: true
+                    });
+                    return animator.$$willAnimate ? animator : null;
+                }
+                function end() {
+                    clone.remove();
+                    outAnchor.removeClass(NG_ANIMATE_SHIM_CLASS_NAME);
+                    inAnchor.removeClass(NG_ANIMATE_SHIM_CLASS_NAME);
+                }
+            }
+            function prepareFromToAnchorAnimation(from, to, classes, anchors) {
+                var fromAnimation = prepareRegularAnimation(from, noop);
+                var toAnimation = prepareRegularAnimation(to, noop);
+                var anchorAnimations = [];
+                forEach(anchors, function(anchor) {
+                    var outElement = anchor["out"];
+                    var inElement = anchor["in"];
+                    var animator = prepareAnchoredAnimation(classes, outElement, inElement);
+                    if (animator) {
+                        anchorAnimations.push(animator);
+                    }
+                });
+                if (!fromAnimation && !toAnimation && anchorAnimations.length === 0) return;
+                return {
+                    start: function() {
+                        var animationRunners = [];
+                        if (fromAnimation) {
+                            animationRunners.push(fromAnimation.start());
+                        }
+                        if (toAnimation) {
+                            animationRunners.push(toAnimation.start());
+                        }
+                        forEach(anchorAnimations, function(animation) {
+                            animationRunners.push(animation.start());
+                        });
+                        var runner = new $$AnimateRunner({
+                            end: endFn,
+                            cancel: endFn
+                        });
+                        $$AnimateRunner.all(animationRunners, function(status) {
+                            runner.complete(status);
+                        });
+                        return runner;
+                        function endFn() {
+                            forEach(animationRunners, function(runner) {
+                                runner.end();
+                            });
+                        }
+                    }
+                };
+            }
+            function prepareRegularAnimation(animationDetails, onBeforeClassesAppliedCb) {
+                var element = animationDetails.element;
+                var options = animationDetails.options || {};
+                options.$$skipPreparationClasses = true;
+                options.skipBlocking = true;
+                if (animationDetails.structural) {
+                    options.event = animationDetails.event;
+                    if (animationDetails.event === "leave") {
+                        options.onDone = options.domOperation;
+                    }
+                }
+                onBeforeClassesAppliedCb(element);
+                applyAnimationClasses(element, options);
+                if (options.preparationClasses) {
+                    options.event = concatWithSpace(options.event, options.preparationClasses);
+                }
+                var animator = $animateCss(element, options);
+                return animator.$$willAnimate ? animator : null;
+            }
+        } ];
+    } ];
+    var $$AnimateJsProvider = [ "$animateProvider", function($animateProvider) {
+        this.$get = [ "$injector", "$$AnimateRunner", "$$rAFMutex", "$$jqLite", function($injector, $$AnimateRunner, $$rAFMutex, $$jqLite) {
+            var applyAnimationClasses = applyAnimationClassesFactory($$jqLite);
+            return function(element, event, classes, options) {
+                if (arguments.length === 3 && isObject(classes)) {
+                    options = classes;
+                    classes = null;
+                }
+                options = prepareAnimationOptions(options);
+                if (!classes) {
+                    classes = element.attr("class") || "";
+                    if (options.addClass) {
+                        classes += " " + options.addClass;
+                    }
+                    if (options.removeClass) {
+                        classes += " " + options.removeClass;
+                    }
+                }
+                var classesToAdd = options.addClass;
+                var classesToRemove = options.removeClass;
+                var animations = lookupAnimations(classes);
+                var before, after;
+                if (animations.length) {
+                    var afterFn, beforeFn;
+                    if (event == "leave") {
+                        beforeFn = "leave";
+                        afterFn = "afterLeave";
+                    } else {
+                        beforeFn = "before" + event.charAt(0).toUpperCase() + event.substr(1);
+                        afterFn = event;
+                    }
+                    if (event !== "enter" && event !== "move") {
+                        before = packageAnimations(element, event, options, animations, beforeFn);
+                    }
+                    after = packageAnimations(element, event, options, animations, afterFn);
+                }
+                if (!before && !after) return;
+                function applyOptions() {
+                    options.domOperation();
+                    applyAnimationClasses(element, options);
+                }
+                return {
+                    start: function() {
+                        var closeActiveAnimations;
+                        var chain = [];
+                        if (before) {
+                            chain.push(function(fn) {
+                                closeActiveAnimations = before(fn);
+                            });
+                        }
+                        if (chain.length) {
+                            chain.push(function(fn) {
+                                applyOptions();
+                                fn(true);
+                            });
+                        } else {
+                            applyOptions();
+                        }
+                        if (after) {
+                            chain.push(function(fn) {
+                                closeActiveAnimations = after(fn);
+                            });
+                        }
+                        var animationClosed = false;
+                        var runner = new $$AnimateRunner({
+                            end: function() {
+                                endAnimations();
+                            },
+                            cancel: function() {
+                                endAnimations(true);
+                            }
+                        });
+                        $$AnimateRunner.chain(chain, onComplete);
+                        return runner;
+                        function onComplete(success) {
+                            animationClosed = true;
+                            applyOptions();
+                            applyAnimationStyles(element, options);
+                            runner.complete(success);
+                        }
+                        function endAnimations(cancelled) {
+                            if (!animationClosed) {
+                                (closeActiveAnimations || noop)(cancelled);
+                                onComplete(cancelled);
+                            }
+                        }
+                    }
+                };
+                function executeAnimationFn(fn, element, event, options, onDone) {
+                    var args;
+                    switch (event) {
+                      case "animate":
+                        args = [ element, options.from, options.to, onDone ];
+                        break;
+
+                      case "setClass":
+                        args = [ element, classesToAdd, classesToRemove, onDone ];
+                        break;
+
+                      case "addClass":
+                        args = [ element, classesToAdd, onDone ];
+                        break;
+
+                      case "removeClass":
+                        args = [ element, classesToRemove, onDone ];
+                        break;
+
+                      default:
+                        args = [ element, onDone ];
+                        break;
+                    }
+                    args.push(options);
+                    var value = fn.apply(fn, args);
+                    if (value) {
+                        if (isFunction(value.start)) {
+                            value = value.start();
+                        }
+                        if (value instanceof $$AnimateRunner) {
+                            value.done(onDone);
+                        } else if (isFunction(value)) {
+                            return value;
+                        }
+                    }
+                    return noop;
+                }
+                function groupEventedAnimations(element, event, options, animations, fnName) {
+                    var operations = [];
+                    forEach(animations, function(ani) {
+                        var animation = ani[fnName];
+                        if (!animation) return;
+                        operations.push(function() {
+                            var runner;
+                            var endProgressCb;
+                            var resolved = false;
+                            var onAnimationComplete = function(rejected) {
+                                if (!resolved) {
+                                    resolved = true;
+                                    (endProgressCb || noop)(rejected);
+                                    runner.complete(!rejected);
+                                }
+                            };
+                            runner = new $$AnimateRunner({
+                                end: function() {
+                                    onAnimationComplete();
+                                },
+                                cancel: function() {
+                                    onAnimationComplete(true);
+                                }
+                            });
+                            endProgressCb = executeAnimationFn(animation, element, event, options, function(result) {
+                                var cancelled = result === false;
+                                onAnimationComplete(cancelled);
+                            });
+                            return runner;
+                        });
+                    });
+                    return operations;
+                }
+                function packageAnimations(element, event, options, animations, fnName) {
+                    var operations = groupEventedAnimations(element, event, options, animations, fnName);
+                    if (operations.length === 0) {
+                        var a, b;
+                        if (fnName === "beforeSetClass") {
+                            a = groupEventedAnimations(element, "removeClass", options, animations, "beforeRemoveClass");
+                            b = groupEventedAnimations(element, "addClass", options, animations, "beforeAddClass");
+                        } else if (fnName === "setClass") {
+                            a = groupEventedAnimations(element, "removeClass", options, animations, "removeClass");
+                            b = groupEventedAnimations(element, "addClass", options, animations, "addClass");
+                        }
+                        if (a) {
+                            operations = operations.concat(a);
+                        }
+                        if (b) {
+                            operations = operations.concat(b);
+                        }
+                    }
+                    if (operations.length === 0) return;
+                    return function startAnimation(callback) {
+                        var runners = [];
+                        if (operations.length) {
+                            forEach(operations, function(animateFn) {
+                                runners.push(animateFn());
+                            });
+                        }
+                        runners.length ? $$AnimateRunner.all(runners, callback) : callback();
+                        return function endFn(reject) {
+                            forEach(runners, function(runner) {
+                                reject ? runner.cancel() : runner.end();
+                            });
+                        };
+                    };
+                }
+            };
+            function lookupAnimations(classes) {
+                classes = isArray(classes) ? classes : classes.split(" ");
+                var matches = [], flagMap = {};
+                for (var i = 0; i < classes.length; i++) {
+                    var klass = classes[i], animationFactory = $animateProvider.$$registeredAnimations[klass];
+                    if (animationFactory && !flagMap[klass]) {
+                        matches.push($injector.get(animationFactory));
+                        flagMap[klass] = true;
+                    }
+                }
+                return matches;
+            }
+        } ];
+    } ];
+    var $$AnimateJsDriverProvider = [ "$$animationProvider", function($$animationProvider) {
+        $$animationProvider.drivers.push("$$animateJsDriver");
+        this.$get = [ "$$animateJs", "$$AnimateRunner", function($$animateJs, $$AnimateRunner) {
+            return function initDriverFn(animationDetails) {
+                if (animationDetails.from && animationDetails.to) {
+                    var fromAnimation = prepareAnimation(animationDetails.from);
+                    var toAnimation = prepareAnimation(animationDetails.to);
+                    if (!fromAnimation && !toAnimation) return;
+                    return {
+                        start: function() {
+                            var animationRunners = [];
+                            if (fromAnimation) {
+                                animationRunners.push(fromAnimation.start());
+                            }
+                            if (toAnimation) {
+                                animationRunners.push(toAnimation.start());
+                            }
+                            $$AnimateRunner.all(animationRunners, done);
+                            var runner = new $$AnimateRunner({
+                                end: endFnFactory(),
+                                cancel: endFnFactory()
+                            });
+                            return runner;
+                            function endFnFactory() {
+                                return function() {
+                                    forEach(animationRunners, function(runner) {
+                                        runner.end();
+                                    });
+                                };
+                            }
+                            function done(status) {
+                                runner.complete(status);
+                            }
+                        }
+                    };
+                } else {
+                    return prepareAnimation(animationDetails);
+                }
+            };
+            function prepareAnimation(animationDetails) {
+                var element = animationDetails.element;
+                var event = animationDetails.event;
+                var options = animationDetails.options;
+                var classes = animationDetails.classes;
+                return $$animateJs(element, event, classes, options);
+            }
+        } ];
+    } ];
+    var NG_ANIMATE_ATTR_NAME = "data-ng-animate";
+    var NG_ANIMATE_PIN_DATA = "$ngAnimatePin";
+    var $$AnimateQueueProvider = [ "$animateProvider", function($animateProvider) {
+        var PRE_DIGEST_STATE = 1;
+        var RUNNING_STATE = 2;
+        var rules = this.rules = {
+            skip: [],
+            cancel: [],
+            join: []
+        };
+        function isAllowed(ruleType, element, currentAnimation, previousAnimation) {
+            return rules[ruleType].some(function(fn) {
+                return fn(element, currentAnimation, previousAnimation);
+            });
         }
-        function prepareElement(element) {
-            return element && angular.element(element);
+        function hasAnimationClasses(options, and) {
+            options = options || {};
+            var a = (options.addClass || "").length > 0;
+            var b = (options.removeClass || "").length > 0;
+            return and ? a && b : a || b;
         }
-        function stripCommentsFromElement(element) {
-            return angular.element(extractElementNode(element));
-        }
-        function isMatchingElement(elm1, elm2) {
-            return extractElementNode(elm1) == extractElementNode(elm2);
-        }
-        $provide.decorator("$animate", [ "$delegate", "$injector", "$sniffer", "$rootElement", "$$asyncCallback", "$rootScope", "$document", function($delegate, $injector, $sniffer, $rootElement, $$asyncCallback, $rootScope, $document) {
-            var globalAnimationCounter = 0;
-            $rootElement.data(NG_ANIMATE_STATE, rootAnimateState);
-            $rootScope.$$postDigest(function() {
+        rules.join.push(function(element, newAnimation, currentAnimation) {
+            return !newAnimation.structural && hasAnimationClasses(newAnimation.options);
+        });
+        rules.skip.push(function(element, newAnimation, currentAnimation) {
+            return !newAnimation.structural && !hasAnimationClasses(newAnimation.options);
+        });
+        rules.skip.push(function(element, newAnimation, currentAnimation) {
+            return currentAnimation.event == "leave" && newAnimation.structural;
+        });
+        rules.skip.push(function(element, newAnimation, currentAnimation) {
+            return currentAnimation.structural && currentAnimation.state === RUNNING_STATE && !newAnimation.structural;
+        });
+        rules.cancel.push(function(element, newAnimation, currentAnimation) {
+            return currentAnimation.structural && newAnimation.structural;
+        });
+        rules.cancel.push(function(element, newAnimation, currentAnimation) {
+            return currentAnimation.state === RUNNING_STATE && newAnimation.structural;
+        });
+        rules.cancel.push(function(element, newAnimation, currentAnimation) {
+            var nO = newAnimation.options;
+            var cO = currentAnimation.options;
+            return nO.addClass && nO.addClass === cO.removeClass || nO.removeClass && nO.removeClass === cO.addClass;
+        });
+        this.$get = [ "$$rAF", "$rootScope", "$rootElement", "$document", "$$body", "$$HashMap", "$$animation", "$$AnimateRunner", "$templateRequest", "$$jqLite", "$$forceReflow", function($$rAF, $rootScope, $rootElement, $document, $$body, $$HashMap, $$animation, $$AnimateRunner, $templateRequest, $$jqLite, $$forceReflow) {
+            var activeAnimationsLookup = new $$HashMap();
+            var disabledElementsLookup = new $$HashMap();
+            var animationsEnabled = null;
+            var deregisterWatch = $rootScope.$watch(function() {
+                return $templateRequest.totalPendingRequests === 0;
+            }, function(isEmpty) {
+                if (!isEmpty) return;
+                deregisterWatch();
                 $rootScope.$$postDigest(function() {
-                    rootAnimateState.running = false;
+                    $rootScope.$$postDigest(function() {
+                        if (animationsEnabled === null) {
+                            animationsEnabled = true;
+                        }
+                    });
                 });
             });
+            var callbackRegistry = {};
             var classNameFilter = $animateProvider.classNameFilter();
             var isAnimatableClassName = !classNameFilter ? function() {
                 return true;
             } : function(className) {
                 return classNameFilter.test(className);
             };
-            function blockElementAnimations(element) {
-                var data = element.data(NG_ANIMATE_STATE) || {};
-                data.running = true;
-                element.data(NG_ANIMATE_STATE, data);
+            var applyAnimationClasses = applyAnimationClassesFactory($$jqLite);
+            function normalizeAnimationOptions(element, options) {
+                return mergeAnimationOptions(element, options, {});
             }
-            function lookup(name) {
-                if (name) {
-                    var matches = [], flagMap = {}, classes = name.substr(1).split(".");
-                    if ($sniffer.transitions || $sniffer.animations) {
-                        matches.push($injector.get(selectors[""]));
+            function findCallbacks(element, event) {
+                var targetNode = getDomNode(element);
+                var matches = [];
+                var entries = callbackRegistry[event];
+                if (entries) {
+                    forEach(entries, function(entry) {
+                        if (entry.node.contains(targetNode)) {
+                            matches.push(entry.callback);
+                        }
+                    });
+                }
+                return matches;
+            }
+            function triggerCallback(event, element, phase, data) {
+                $$rAF(function() {
+                    forEach(findCallbacks(element, event), function(callback) {
+                        callback(element, phase, data);
+                    });
+                });
+            }
+            return {
+                on: function(event, container, callback) {
+                    var node = extractElementNode(container);
+                    callbackRegistry[event] = callbackRegistry[event] || [];
+                    callbackRegistry[event].push({
+                        node: node,
+                        callback: callback
+                    });
+                },
+                off: function(event, container, callback) {
+                    var entries = callbackRegistry[event];
+                    if (!entries) return;
+                    callbackRegistry[event] = arguments.length === 1 ? null : filterFromRegistry(entries, container, callback);
+                    function filterFromRegistry(list, matchContainer, matchCallback) {
+                        var containerNode = extractElementNode(matchContainer);
+                        return list.filter(function(entry) {
+                            var isMatch = entry.node === containerNode && (!matchCallback || entry.callback === matchCallback);
+                            return !isMatch;
+                        });
                     }
-                    for (var i = 0; i < classes.length; i++) {
-                        var klass = classes[i], selectorFactoryName = selectors[klass];
-                        if (selectorFactoryName && !flagMap[klass]) {
-                            matches.push($injector.get(selectorFactoryName));
-                            flagMap[klass] = true;
+                },
+                pin: function(element, parentElement) {
+                    assertArg(isElement(element), "element", "not an element");
+                    assertArg(isElement(parentElement), "parentElement", "not an element");
+                    element.data(NG_ANIMATE_PIN_DATA, parentElement);
+                },
+                push: function(element, event, options, domOperation) {
+                    options = options || {};
+                    options.domOperation = domOperation;
+                    return queueAnimation(element, event, options);
+                },
+                enabled: function(element, bool) {
+                    var argCount = arguments.length;
+                    if (argCount === 0) {
+                        bool = !!animationsEnabled;
+                    } else {
+                        var hasElement = isElement(element);
+                        if (!hasElement) {
+                            bool = animationsEnabled = !!element;
+                        } else {
+                            var node = getDomNode(element);
+                            var recordExists = disabledElementsLookup.get(node);
+                            if (argCount === 1) {
+                                bool = !recordExists;
+                            } else {
+                                bool = !!bool;
+                                if (!bool) {
+                                    disabledElementsLookup.put(node, true);
+                                } else if (recordExists) {
+                                    disabledElementsLookup.remove(node);
+                                }
+                            }
                         }
                     }
-                    return matches;
+                    return bool;
+                }
+            };
+            function queueAnimation(element, event, options) {
+                var node, parent;
+                element = stripCommentsFromElement(element);
+                if (element) {
+                    node = getDomNode(element);
+                    parent = element.parent();
+                }
+                options = prepareAnimationOptions(options);
+                var runner = new $$AnimateRunner();
+                if (isArray(options.addClass)) {
+                    options.addClass = options.addClass.join(" ");
+                }
+                if (options.addClass && !isString(options.addClass)) {
+                    options.addClass = null;
+                }
+                if (isArray(options.removeClass)) {
+                    options.removeClass = options.removeClass.join(" ");
+                }
+                if (options.removeClass && !isString(options.removeClass)) {
+                    options.removeClass = null;
+                }
+                if (options.from && !isObject(options.from)) {
+                    options.from = null;
+                }
+                if (options.to && !isObject(options.to)) {
+                    options.to = null;
+                }
+                if (!node) {
+                    close();
+                    return runner;
+                }
+                var className = [ node.className, options.addClass, options.removeClass ].join(" ");
+                if (!isAnimatableClassName(className)) {
+                    close();
+                    return runner;
+                }
+                var isStructural = [ "enter", "move", "leave" ].indexOf(event) >= 0;
+                var skipAnimations = !animationsEnabled || disabledElementsLookup.get(node);
+                var existingAnimation = !skipAnimations && activeAnimationsLookup.get(node) || {};
+                var hasExistingAnimation = !!existingAnimation.state;
+                if (!skipAnimations && (!hasExistingAnimation || existingAnimation.state != PRE_DIGEST_STATE)) {
+                    skipAnimations = !areAnimationsAllowed(element, parent, event);
+                }
+                if (skipAnimations) {
+                    close();
+                    return runner;
+                }
+                if (isStructural) {
+                    closeChildAnimations(element);
+                }
+                var newAnimation = {
+                    structural: isStructural,
+                    element: element,
+                    event: event,
+                    close: close,
+                    options: options,
+                    runner: runner
+                };
+                if (hasExistingAnimation) {
+                    var skipAnimationFlag = isAllowed("skip", element, newAnimation, existingAnimation);
+                    if (skipAnimationFlag) {
+                        if (existingAnimation.state === RUNNING_STATE) {
+                            close();
+                            return runner;
+                        } else {
+                            mergeAnimationOptions(element, existingAnimation.options, options);
+                            return existingAnimation.runner;
+                        }
+                    }
+                    var cancelAnimationFlag = isAllowed("cancel", element, newAnimation, existingAnimation);
+                    if (cancelAnimationFlag) {
+                        if (existingAnimation.state === RUNNING_STATE) {
+                            existingAnimation.runner.end();
+                        } else if (existingAnimation.structural) {
+                            existingAnimation.close();
+                        } else {
+                            mergeAnimationOptions(element, existingAnimation.options, newAnimation.options);
+                            return existingAnimation.runner;
+                        }
+                    } else {
+                        var joinAnimationFlag = isAllowed("join", element, newAnimation, existingAnimation);
+                        if (joinAnimationFlag) {
+                            if (existingAnimation.state === RUNNING_STATE) {
+                                normalizeAnimationOptions(element, options);
+                            } else {
+                                applyGeneratedPreparationClasses(element, isStructural ? event : null, options);
+                                event = newAnimation.event = existingAnimation.event;
+                                options = mergeAnimationOptions(element, existingAnimation.options, newAnimation.options);
+                                return existingAnimation.runner;
+                            }
+                        }
+                    }
+                } else {
+                    normalizeAnimationOptions(element, options);
+                }
+                var isValidAnimation = newAnimation.structural;
+                if (!isValidAnimation) {
+                    isValidAnimation = newAnimation.event === "animate" && Object.keys(newAnimation.options.to || {}).length > 0 || hasAnimationClasses(newAnimation.options);
+                }
+                if (!isValidAnimation) {
+                    close();
+                    clearElementAnimationState(element);
+                    return runner;
+                }
+                applyGeneratedPreparationClasses(element, isStructural ? event : null, options);
+                blockTransitions(node, SAFE_FAST_FORWARD_DURATION_VALUE);
+                var counter = (existingAnimation.counter || 0) + 1;
+                newAnimation.counter = counter;
+                markElementAnimationState(element, PRE_DIGEST_STATE, newAnimation);
+                $rootScope.$$postDigest(function() {
+                    var animationDetails = activeAnimationsLookup.get(node);
+                    var animationCancelled = !animationDetails;
+                    animationDetails = animationDetails || {};
+                    var parentElement = element.parent() || [];
+                    var isValidAnimation = parentElement.length > 0 && (animationDetails.event === "animate" || animationDetails.structural || hasAnimationClasses(animationDetails.options));
+                    if (animationCancelled || animationDetails.counter !== counter || !isValidAnimation) {
+                        if (animationCancelled) {
+                            applyAnimationClasses(element, options);
+                            applyAnimationStyles(element, options);
+                        }
+                        if (animationCancelled || isStructural && animationDetails.event !== event) {
+                            options.domOperation();
+                            runner.end();
+                        }
+                        if (!isValidAnimation) {
+                            clearElementAnimationState(element);
+                        }
+                        return;
+                    }
+                    event = !animationDetails.structural && hasAnimationClasses(animationDetails.options, true) ? "setClass" : animationDetails.event;
+                    markElementAnimationState(element, RUNNING_STATE);
+                    var realRunner = $$animation(element, event, animationDetails.options, function(e) {
+                        $$forceReflow();
+                        blockTransitions(getDomNode(e), false);
+                    });
+                    realRunner.done(function(status) {
+                        close(!status);
+                        var animationDetails = activeAnimationsLookup.get(node);
+                        if (animationDetails && animationDetails.counter === counter) {
+                            clearElementAnimationState(getDomNode(element));
+                        }
+                        notifyProgress(runner, event, "close", {});
+                    });
+                    runner.setHost(realRunner);
+                    notifyProgress(runner, event, "start", {});
+                });
+                return runner;
+                function notifyProgress(runner, event, phase, data) {
+                    triggerCallback(event, element, phase, data);
+                    runner.progress(event, phase, data);
+                }
+                function close(reject) {
+                    clearGeneratedClasses(element, options);
+                    applyAnimationClasses(element, options);
+                    applyAnimationStyles(element, options);
+                    options.domOperation();
+                    runner.complete(!reject);
                 }
             }
-            function animationRunner(element, animationEvent, className) {
-                var node = element[0];
-                if (!node) {
-                    return;
-                }
-                var isSetClassOperation = animationEvent == "setClass";
-                var isClassBased = isSetClassOperation || animationEvent == "addClass" || animationEvent == "removeClass";
-                var classNameAdd, classNameRemove;
-                if (angular.isArray(className)) {
-                    classNameAdd = className[0];
-                    classNameRemove = className[1];
-                    className = classNameAdd + " " + classNameRemove;
-                }
-                var currentClassName = element.attr("class");
-                var classes = currentClassName + " " + className;
-                if (!isAnimatableClassName(classes)) {
-                    return;
-                }
-                var beforeComplete = noop, beforeCancel = [], before = [], afterComplete = noop, afterCancel = [], after = [];
-                var animationLookup = (" " + classes).replace(/\s+/g, ".");
-                forEach(lookup(animationLookup), function(animationFactory) {
-                    var created = registerAnimation(animationFactory, animationEvent);
-                    if (!created && isSetClassOperation) {
-                        registerAnimation(animationFactory, "addClass");
-                        registerAnimation(animationFactory, "removeClass");
+            function closeChildAnimations(element) {
+                var node = getDomNode(element);
+                var children = node.querySelectorAll("[" + NG_ANIMATE_ATTR_NAME + "]");
+                forEach(children, function(child) {
+                    var state = parseInt(child.getAttribute(NG_ANIMATE_ATTR_NAME));
+                    var animationDetails = activeAnimationsLookup.get(child);
+                    switch (state) {
+                      case RUNNING_STATE:
+                        animationDetails.runner.end();
+
+                      case PRE_DIGEST_STATE:
+                        if (animationDetails) {
+                            activeAnimationsLookup.remove(child);
+                        }
+                        break;
                     }
                 });
-                function registerAnimation(animationFactory, event) {
-                    var afterFn = animationFactory[event];
-                    var beforeFn = animationFactory["before" + event.charAt(0).toUpperCase() + event.substr(1)];
-                    if (afterFn || beforeFn) {
-                        if (event == "leave") {
-                            beforeFn = afterFn;
-                            afterFn = null;
-                        }
-                        after.push({
-                            event: event,
-                            fn: afterFn
-                        });
-                        before.push({
-                            event: event,
-                            fn: beforeFn
-                        });
-                        return true;
-                    }
+            }
+            function clearElementAnimationState(element) {
+                var node = getDomNode(element);
+                node.removeAttribute(NG_ANIMATE_ATTR_NAME);
+                activeAnimationsLookup.remove(node);
+            }
+            function isMatchingElement(nodeOrElmA, nodeOrElmB) {
+                return getDomNode(nodeOrElmA) === getDomNode(nodeOrElmB);
+            }
+            function areAnimationsAllowed(element, parentElement, event) {
+                var bodyElementDetected = isMatchingElement(element, $$body) || element[0].nodeName === "HTML";
+                var rootElementDetected = isMatchingElement(element, $rootElement);
+                var parentAnimationDetected = false;
+                var animateChildren;
+                var parentHost = element.data(NG_ANIMATE_PIN_DATA);
+                if (parentHost) {
+                    parentElement = parentHost;
                 }
-                function run(fns, cancellations, allCompleteFn) {
-                    var animations = [];
-                    forEach(fns, function(animation) {
-                        animation.fn && animations.push(animation);
-                    });
-                    var count = 0;
-                    function afterAnimationComplete(index) {
-                        if (cancellations) {
-                            (cancellations[index] || noop)();
-                            if (++count < animations.length) return;
-                            cancellations = null;
-                        }
-                        allCompleteFn();
+                while (parentElement && parentElement.length) {
+                    if (!rootElementDetected) {
+                        rootElementDetected = isMatchingElement(parentElement, $rootElement);
                     }
-                    forEach(animations, function(animation, index) {
-                        var progress = function() {
-                            afterAnimationComplete(index);
-                        };
-                        switch (animation.event) {
-                          case "setClass":
-                            cancellations.push(animation.fn(element, classNameAdd, classNameRemove, progress));
-                            break;
-
-                          case "addClass":
-                            cancellations.push(animation.fn(element, classNameAdd || className, progress));
-                            break;
-
-                          case "removeClass":
-                            cancellations.push(animation.fn(element, classNameRemove || className, progress));
-                            break;
-
-                          default:
-                            cancellations.push(animation.fn(element, progress));
-                            break;
-                        }
-                    });
-                    if (cancellations && cancellations.length === 0) {
-                        allCompleteFn();
+                    var parentNode = parentElement[0];
+                    if (parentNode.nodeType !== ELEMENT_NODE) {
+                        break;
                     }
+                    var details = activeAnimationsLookup.get(parentNode) || {};
+                    if (!parentAnimationDetected) {
+                        parentAnimationDetected = details.structural || disabledElementsLookup.get(parentNode);
+                    }
+                    if (isUndefined(animateChildren) || animateChildren === true) {
+                        var value = parentElement.data(NG_ANIMATE_CHILDREN_DATA);
+                        if (isDefined(value)) {
+                            animateChildren = value;
+                        }
+                    }
+                    if (parentAnimationDetected && animateChildren === false) break;
+                    if (!rootElementDetected) {
+                        rootElementDetected = isMatchingElement(parentElement, $rootElement);
+                        if (!rootElementDetected) {
+                            parentHost = parentElement.data(NG_ANIMATE_PIN_DATA);
+                            if (parentHost) {
+                                parentElement = parentHost;
+                            }
+                        }
+                    }
+                    if (!bodyElementDetected) {
+                        bodyElementDetected = isMatchingElement(parentElement, $$body);
+                    }
+                    parentElement = parentElement.parent();
                 }
-                return {
-                    node: node,
-                    event: animationEvent,
-                    className: className,
-                    isClassBased: isClassBased,
-                    isSetClassOperation: isSetClassOperation,
-                    before: function(allCompleteFn) {
-                        beforeComplete = allCompleteFn;
-                        run(before, beforeCancel, function() {
-                            beforeComplete = noop;
-                            allCompleteFn();
+                var allowAnimation = !parentAnimationDetected || animateChildren;
+                return allowAnimation && rootElementDetected && bodyElementDetected;
+            }
+            function markElementAnimationState(element, state, details) {
+                details = details || {};
+                details.state = state;
+                var node = getDomNode(element);
+                node.setAttribute(NG_ANIMATE_ATTR_NAME, state);
+                var oldValue = activeAnimationsLookup.get(node);
+                var newValue = oldValue ? extend(oldValue, details) : details;
+                activeAnimationsLookup.put(node, newValue);
+            }
+        } ];
+    } ];
+    var $$rAFMutexFactory = [ "$$rAF", function($$rAF) {
+        return function() {
+            var passed = false;
+            $$rAF(function() {
+                passed = true;
+            });
+            return function(fn) {
+                passed ? fn() : $$rAF(fn);
+            };
+        };
+    } ];
+    var $$AnimateRunnerFactory = [ "$q", "$$rAFMutex", function($q, $$rAFMutex) {
+        var INITIAL_STATE = 0;
+        var DONE_PENDING_STATE = 1;
+        var DONE_COMPLETE_STATE = 2;
+        AnimateRunner.chain = function(chain, callback) {
+            var index = 0;
+            next();
+            function next() {
+                if (index === chain.length) {
+                    callback(true);
+                    return;
+                }
+                chain[index](function(response) {
+                    if (response === false) {
+                        callback(false);
+                        return;
+                    }
+                    index++;
+                    next();
+                });
+            }
+        };
+        AnimateRunner.all = function(runners, callback) {
+            var count = 0;
+            var status = true;
+            forEach(runners, function(runner) {
+                runner.done(onProgress);
+            });
+            function onProgress(response) {
+                status = status && response;
+                if (++count === runners.length) {
+                    callback(status);
+                }
+            }
+        };
+        function AnimateRunner(host) {
+            this.setHost(host);
+            this._doneCallbacks = [];
+            this._runInAnimationFrame = $$rAFMutex();
+            this._state = 0;
+        }
+        AnimateRunner.prototype = {
+            setHost: function(host) {
+                this.host = host || {};
+            },
+            done: function(fn) {
+                if (this._state === DONE_COMPLETE_STATE) {
+                    fn();
+                } else {
+                    this._doneCallbacks.push(fn);
+                }
+            },
+            progress: noop,
+            getPromise: function() {
+                if (!this.promise) {
+                    var self = this;
+                    this.promise = $q(function(resolve, reject) {
+                        self.done(function(status) {
+                            status === false ? reject() : resolve();
                         });
-                    },
-                    after: function(allCompleteFn) {
-                        afterComplete = allCompleteFn;
-                        run(after, afterCancel, function() {
-                            afterComplete = noop;
-                            allCompleteFn();
+                    });
+                }
+                return this.promise;
+            },
+            then: function(resolveHandler, rejectHandler) {
+                return this.getPromise().then(resolveHandler, rejectHandler);
+            },
+            "catch": function(handler) {
+                return this.getPromise()["catch"](handler);
+            },
+            "finally": function(handler) {
+                return this.getPromise()["finally"](handler);
+            },
+            pause: function() {
+                if (this.host.pause) {
+                    this.host.pause();
+                }
+            },
+            resume: function() {
+                if (this.host.resume) {
+                    this.host.resume();
+                }
+            },
+            end: function() {
+                if (this.host.end) {
+                    this.host.end();
+                }
+                this._resolve(true);
+            },
+            cancel: function() {
+                if (this.host.cancel) {
+                    this.host.cancel();
+                }
+                this._resolve(false);
+            },
+            complete: function(response) {
+                var self = this;
+                if (self._state === INITIAL_STATE) {
+                    self._state = DONE_PENDING_STATE;
+                    self._runInAnimationFrame(function() {
+                        self._resolve(response);
+                    });
+                }
+            },
+            _resolve: function(response) {
+                if (this._state !== DONE_COMPLETE_STATE) {
+                    forEach(this._doneCallbacks, function(fn) {
+                        fn(response);
+                    });
+                    this._doneCallbacks.length = 0;
+                    this._state = DONE_COMPLETE_STATE;
+                }
+            }
+        };
+        return AnimateRunner;
+    } ];
+    var $$AnimationProvider = [ "$animateProvider", function($animateProvider) {
+        var NG_ANIMATE_REF_ATTR = "ng-animate-ref";
+        var drivers = this.drivers = [];
+        var RUNNER_STORAGE_KEY = "$$animationRunner";
+        function setRunner(element, runner) {
+            element.data(RUNNER_STORAGE_KEY, runner);
+        }
+        function removeRunner(element) {
+            element.removeData(RUNNER_STORAGE_KEY);
+        }
+        function getRunner(element) {
+            return element.data(RUNNER_STORAGE_KEY);
+        }
+        this.$get = [ "$$jqLite", "$rootScope", "$injector", "$$AnimateRunner", "$$HashMap", function($$jqLite, $rootScope, $injector, $$AnimateRunner, $$HashMap) {
+            var animationQueue = [];
+            var applyAnimationClasses = applyAnimationClassesFactory($$jqLite);
+            function sortAnimations(animations) {
+                var tree = {
+                    children: []
+                };
+                var i, lookup = new $$HashMap();
+                for (i = 0; i < animations.length; i++) {
+                    var animation = animations[i];
+                    lookup.put(animation.domNode, animations[i] = {
+                        domNode: animation.domNode,
+                        fn: animation.fn,
+                        children: []
+                    });
+                }
+                for (i = 0; i < animations.length; i++) {
+                    processNode(animations[i]);
+                }
+                return flatten(tree);
+                function processNode(entry) {
+                    if (entry.processed) return entry;
+                    entry.processed = true;
+                    var elementNode = entry.domNode;
+                    var parentNode = elementNode.parentNode;
+                    lookup.put(elementNode, entry);
+                    var parentEntry;
+                    while (parentNode) {
+                        parentEntry = lookup.get(parentNode);
+                        if (parentEntry) {
+                            if (!parentEntry.processed) {
+                                parentEntry = processNode(parentEntry);
+                            }
+                            break;
+                        }
+                        parentNode = parentNode.parentNode;
+                    }
+                    (parentEntry || tree).children.push(entry);
+                    return entry;
+                }
+                function flatten(tree) {
+                    var result = [];
+                    var queue = [];
+                    var i;
+                    for (i = 0; i < tree.children.length; i++) {
+                        queue.push(tree.children[i]);
+                    }
+                    var remainingLevelEntries = queue.length;
+                    var nextLevelEntries = 0;
+                    var row = [];
+                    for (i = 0; i < queue.length; i++) {
+                        var entry = queue[i];
+                        if (remainingLevelEntries <= 0) {
+                            remainingLevelEntries = nextLevelEntries;
+                            nextLevelEntries = 0;
+                            result = result.concat(row);
+                            row = [];
+                        }
+                        row.push(entry.fn);
+                        forEach(entry.children, function(childEntry) {
+                            nextLevelEntries++;
+                            queue.push(childEntry);
                         });
+                        remainingLevelEntries--;
+                    }
+                    if (row.length) {
+                        result = result.concat(row);
+                    }
+                    return result;
+                }
+            }
+            return function(element, event, options, onBeforeClassesAppliedCb) {
+                options = prepareAnimationOptions(options);
+                var isStructural = [ "enter", "move", "leave" ].indexOf(event) >= 0;
+                var runner = new $$AnimateRunner({
+                    end: function() {
+                        close();
                     },
                     cancel: function() {
-                        if (beforeCancel) {
-                            forEach(beforeCancel, function(cancelFn) {
-                                (cancelFn || noop)(true);
-                            });
-                            beforeComplete(true);
-                        }
-                        if (afterCancel) {
-                            forEach(afterCancel, function(cancelFn) {
-                                (cancelFn || noop)(true);
-                            });
-                            afterComplete(true);
-                        }
-                    }
-                };
-            }
-            return {
-                enter: function(element, parentElement, afterElement, doneCallback) {
-                    element = angular.element(element);
-                    parentElement = prepareElement(parentElement);
-                    afterElement = prepareElement(afterElement);
-                    blockElementAnimations(element);
-                    $delegate.enter(element, parentElement, afterElement);
-                    $rootScope.$$postDigest(function() {
-                        element = stripCommentsFromElement(element);
-                        performAnimation("enter", "ng-enter", element, parentElement, afterElement, noop, doneCallback);
-                    });
-                },
-                leave: function(element, doneCallback) {
-                    element = angular.element(element);
-                    cancelChildAnimations(element);
-                    blockElementAnimations(element);
-                    $rootScope.$$postDigest(function() {
-                        performAnimation("leave", "ng-leave", stripCommentsFromElement(element), null, null, function() {
-                            $delegate.leave(element);
-                        }, doneCallback);
-                    });
-                },
-                move: function(element, parentElement, afterElement, doneCallback) {
-                    element = angular.element(element);
-                    parentElement = prepareElement(parentElement);
-                    afterElement = prepareElement(afterElement);
-                    cancelChildAnimations(element);
-                    blockElementAnimations(element);
-                    $delegate.move(element, parentElement, afterElement);
-                    $rootScope.$$postDigest(function() {
-                        element = stripCommentsFromElement(element);
-                        performAnimation("move", "ng-move", element, parentElement, afterElement, noop, doneCallback);
-                    });
-                },
-                addClass: function(element, className, doneCallback) {
-                    element = angular.element(element);
-                    element = stripCommentsFromElement(element);
-                    performAnimation("addClass", className, element, null, null, function() {
-                        $delegate.addClass(element, className);
-                    }, doneCallback);
-                },
-                removeClass: function(element, className, doneCallback) {
-                    element = angular.element(element);
-                    element = stripCommentsFromElement(element);
-                    performAnimation("removeClass", className, element, null, null, function() {
-                        $delegate.removeClass(element, className);
-                    }, doneCallback);
-                },
-                setClass: function(element, add, remove, doneCallback) {
-                    element = angular.element(element);
-                    element = stripCommentsFromElement(element);
-                    performAnimation("setClass", [ add, remove ], element, null, null, function() {
-                        $delegate.setClass(element, add, remove);
-                    }, doneCallback);
-                },
-                enabled: function(value, element) {
-                    switch (arguments.length) {
-                      case 2:
-                        if (value) {
-                            cleanup(element);
-                        } else {
-                            var data = element.data(NG_ANIMATE_STATE) || {};
-                            data.disabled = true;
-                            element.data(NG_ANIMATE_STATE, data);
-                        }
-                        break;
-
-                      case 1:
-                        rootAnimateState.disabled = !value;
-                        break;
-
-                      default:
-                        value = !rootAnimateState.disabled;
-                        break;
-                    }
-                    return !!value;
-                }
-            };
-            function performAnimation(animationEvent, className, element, parentElement, afterElement, domOperation, doneCallback) {
-                var runner = animationRunner(element, animationEvent, className);
-                if (!runner) {
-                    fireDOMOperation();
-                    fireBeforeCallbackAsync();
-                    fireAfterCallbackAsync();
-                    closeAnimation();
-                    return;
-                }
-                className = runner.className;
-                var elementEvents = angular.element._data(runner.node);
-                elementEvents = elementEvents && elementEvents.events;
-                if (!parentElement) {
-                    parentElement = afterElement ? afterElement.parent() : element.parent();
-                }
-                var ngAnimateState = element.data(NG_ANIMATE_STATE) || {};
-                var runningAnimations = ngAnimateState.active || {};
-                var totalActiveAnimations = ngAnimateState.totalActive || 0;
-                var lastAnimation = ngAnimateState.last;
-                var skipAnimations;
-                if (runner.isClassBased) {
-                    skipAnimations = ngAnimateState.running || ngAnimateState.disabled || lastAnimation && !lastAnimation.isClassBased;
-                }
-                if (skipAnimations || animationsDisabled(element, parentElement)) {
-                    fireDOMOperation();
-                    fireBeforeCallbackAsync();
-                    fireAfterCallbackAsync();
-                    closeAnimation();
-                    return;
-                }
-                var skipAnimation = false;
-                if (totalActiveAnimations > 0) {
-                    var animationsToCancel = [];
-                    if (!runner.isClassBased) {
-                        if (animationEvent == "leave" && runningAnimations["ng-leave"]) {
-                            skipAnimation = true;
-                        } else {
-                            for (var klass in runningAnimations) {
-                                animationsToCancel.push(runningAnimations[klass]);
-                                cleanup(element, klass);
-                            }
-                            runningAnimations = {};
-                            totalActiveAnimations = 0;
-                        }
-                    } else if (lastAnimation.event == "setClass") {
-                        animationsToCancel.push(lastAnimation);
-                        cleanup(element, className);
-                    } else if (runningAnimations[className]) {
-                        var current = runningAnimations[className];
-                        if (current.event == animationEvent) {
-                            skipAnimation = true;
-                        } else {
-                            animationsToCancel.push(current);
-                            cleanup(element, className);
-                        }
-                    }
-                    if (animationsToCancel.length > 0) {
-                        forEach(animationsToCancel, function(operation) {
-                            operation.cancel();
-                        });
-                    }
-                }
-                if (runner.isClassBased && !runner.isSetClassOperation && !skipAnimation) {
-                    skipAnimation = animationEvent == "addClass" == element.hasClass(className);
-                }
-                if (skipAnimation) {
-                    fireDOMOperation();
-                    fireBeforeCallbackAsync();
-                    fireAfterCallbackAsync();
-                    fireDoneCallbackAsync();
-                    return;
-                }
-                if (animationEvent == "leave") {
-                    element.one("$destroy", function(e) {
-                        var element = angular.element(this);
-                        var state = element.data(NG_ANIMATE_STATE);
-                        if (state) {
-                            var activeLeaveAnimation = state.active["ng-leave"];
-                            if (activeLeaveAnimation) {
-                                activeLeaveAnimation.cancel();
-                                cleanup(element, "ng-leave");
-                            }
-                        }
-                    });
-                }
-                element.addClass(NG_ANIMATE_CLASS_NAME);
-                var localAnimationCount = globalAnimationCounter++;
-                totalActiveAnimations++;
-                runningAnimations[className] = runner;
-                element.data(NG_ANIMATE_STATE, {
-                    last: runner,
-                    active: runningAnimations,
-                    index: localAnimationCount,
-                    totalActive: totalActiveAnimations
-                });
-                fireBeforeCallbackAsync();
-                runner.before(function(cancelled) {
-                    var data = element.data(NG_ANIMATE_STATE);
-                    cancelled = cancelled || !data || !data.active[className] || runner.isClassBased && data.active[className].event != animationEvent;
-                    fireDOMOperation();
-                    if (cancelled === true) {
-                        closeAnimation();
-                    } else {
-                        fireAfterCallbackAsync();
-                        runner.after(closeAnimation);
+                        close(true);
                     }
                 });
-                function fireDOMCallback(animationPhase) {
-                    var eventName = "$animate:" + animationPhase;
-                    if (elementEvents && elementEvents[eventName] && elementEvents[eventName].length > 0) {
-                        $$asyncCallback(function() {
-                            element.triggerHandler(eventName, {
-                                event: animationEvent,
-                                className: className
-                            });
-                        });
-                    }
+                if (!drivers.length) {
+                    close();
+                    return runner;
                 }
-                function fireBeforeCallbackAsync() {
-                    fireDOMCallback("before");
+                setRunner(element, runner);
+                var classes = mergeClasses(element.attr("class"), mergeClasses(options.addClass, options.removeClass));
+                var tempClasses = options.tempClasses;
+                if (tempClasses) {
+                    classes += " " + tempClasses;
+                    options.tempClasses = null;
                 }
-                function fireAfterCallbackAsync() {
-                    fireDOMCallback("after");
-                }
-                function fireDoneCallbackAsync() {
-                    fireDOMCallback("close");
-                    if (doneCallback) {
-                        $$asyncCallback(function() {
-                            doneCallback();
-                        });
-                    }
-                }
-                function fireDOMOperation() {
-                    if (!fireDOMOperation.hasBeenRun) {
-                        fireDOMOperation.hasBeenRun = true;
-                        domOperation();
-                    }
-                }
-                function closeAnimation() {
-                    if (!closeAnimation.hasBeenRun) {
-                        closeAnimation.hasBeenRun = true;
-                        var data = element.data(NG_ANIMATE_STATE);
-                        if (data) {
-                            if (runner && runner.isClassBased) {
-                                cleanup(element, className);
-                            } else {
-                                $$asyncCallback(function() {
-                                    var data = element.data(NG_ANIMATE_STATE) || {};
-                                    if (localAnimationCount == data.index) {
-                                        cleanup(element, className, animationEvent);
+                animationQueue.push({
+                    element: element,
+                    classes: classes,
+                    event: event,
+                    structural: isStructural,
+                    options: options,
+                    beforeStart: beforeStart,
+                    close: close
+                });
+                element.on("$destroy", handleDestroyedElement);
+                if (animationQueue.length > 1) return runner;
+                $rootScope.$$postDigest(function() {
+                    var animations = [];
+                    forEach(animationQueue, function(entry) {
+                        var elm = entry.element;
+                        if (getRunner(elm) && getDomNode(elm).parentNode) {
+                            animations.push(entry);
+                        } else {
+                            entry.close();
+                        }
+                    });
+                    animationQueue.length = 0;
+                    var groupedAnimations = groupAnimations(animations);
+                    var toBeSortedAnimations = [];
+                    forEach(groupedAnimations, function(animationEntry) {
+                        toBeSortedAnimations.push({
+                            domNode: getDomNode(animationEntry.from ? animationEntry.from.element : animationEntry.element),
+                            fn: function triggerAnimationStart() {
+                                animationEntry.beforeStart();
+                                var startAnimationFn, closeFn = animationEntry.close;
+                                var targetElement = animationEntry.anchors ? animationEntry.from.element || animationEntry.to.element : animationEntry.element;
+                                if (getRunner(targetElement)) {
+                                    var operation = invokeFirstDriver(animationEntry, onBeforeClassesAppliedCb);
+                                    if (operation) {
+                                        startAnimationFn = operation.start;
                                     }
-                                });
-                                element.data(NG_ANIMATE_STATE, data);
+                                }
+                                if (!startAnimationFn) {
+                                    closeFn();
+                                } else {
+                                    var animationRunner = startAnimationFn();
+                                    animationRunner.done(function(status) {
+                                        closeFn(!status);
+                                    });
+                                    updateAnimationRunners(animationEntry, animationRunner);
+                                }
                             }
+                        });
+                    });
+                    forEach(sortAnimations(toBeSortedAnimations), function(triggerAnimation) {
+                        triggerAnimation();
+                    });
+                });
+                return runner;
+                function getAnchorNodes(node) {
+                    var SELECTOR = "[" + NG_ANIMATE_REF_ATTR + "]";
+                    var items = node.hasAttribute(NG_ANIMATE_REF_ATTR) ? [ node ] : node.querySelectorAll(SELECTOR);
+                    var anchors = [];
+                    forEach(items, function(node) {
+                        var attr = node.getAttribute(NG_ANIMATE_REF_ATTR);
+                        if (attr && attr.length) {
+                            anchors.push(node);
                         }
-                        fireDoneCallbackAsync();
-                    }
+                    });
+                    return anchors;
                 }
-            }
-            function cancelChildAnimations(element) {
-                var node = extractElementNode(element);
-                if (node) {
-                    var nodes = angular.isFunction(node.getElementsByClassName) ? node.getElementsByClassName(NG_ANIMATE_CLASS_NAME) : node.querySelectorAll("." + NG_ANIMATE_CLASS_NAME);
-                    forEach(nodes, function(element) {
-                        element = angular.element(element);
-                        var data = element.data(NG_ANIMATE_STATE);
-                        if (data && data.active) {
-                            forEach(data.active, function(runner) {
-                                runner.cancel();
+                function groupAnimations(animations) {
+                    var preparedAnimations = [];
+                    var refLookup = {};
+                    forEach(animations, function(animation, index) {
+                        var element = animation.element;
+                        var node = getDomNode(element);
+                        var event = animation.event;
+                        var enterOrMove = [ "enter", "move" ].indexOf(event) >= 0;
+                        var anchorNodes = animation.structural ? getAnchorNodes(node) : [];
+                        if (anchorNodes.length) {
+                            var direction = enterOrMove ? "to" : "from";
+                            forEach(anchorNodes, function(anchor) {
+                                var key = anchor.getAttribute(NG_ANIMATE_REF_ATTR);
+                                refLookup[key] = refLookup[key] || {};
+                                refLookup[key][direction] = {
+                                    animationID: index,
+                                    element: jqLite(anchor)
+                                };
                             });
+                        } else {
+                            preparedAnimations.push(animation);
                         }
                     });
-                }
-            }
-            function cleanup(element, className) {
-                if (isMatchingElement(element, $rootElement)) {
-                    if (!rootAnimateState.disabled) {
-                        rootAnimateState.running = false;
-                        rootAnimateState.structural = false;
-                    }
-                } else if (className) {
-                    var data = element.data(NG_ANIMATE_STATE) || {};
-                    var removeAnimations = className === true;
-                    if (!removeAnimations && data.active && data.active[className]) {
-                        data.totalActive--;
-                        delete data.active[className];
-                    }
-                    if (removeAnimations || !data.totalActive) {
-                        element.removeClass(NG_ANIMATE_CLASS_NAME);
-                        element.removeData(NG_ANIMATE_STATE);
-                    }
-                }
-            }
-            function animationsDisabled(element, parentElement) {
-                if (rootAnimateState.disabled) {
-                    return true;
-                }
-                if (isMatchingElement(element, $rootElement)) {
-                    return rootAnimateState.running;
-                }
-                var allowChildAnimations, parentRunningAnimation, hasParent;
-                do {
-                    if (parentElement.length === 0) break;
-                    var isRoot = isMatchingElement(parentElement, $rootElement);
-                    var state = isRoot ? rootAnimateState : parentElement.data(NG_ANIMATE_STATE) || {};
-                    if (state.disabled) {
-                        return true;
-                    }
-                    if (isRoot) {
-                        hasParent = true;
-                    }
-                    if (allowChildAnimations !== false) {
-                        var animateChildrenFlag = parentElement.data(NG_ANIMATE_CHILDREN);
-                        if (angular.isDefined(animateChildrenFlag)) {
-                            allowChildAnimations = animateChildrenFlag;
-                        }
-                    }
-                    parentRunningAnimation = parentRunningAnimation || state.running || state.last && !state.last.isClassBased;
-                } while (parentElement = parentElement.parent());
-                return !hasParent || !allowChildAnimations && parentRunningAnimation;
-            }
-        } ]);
-        $animateProvider.register("", [ "$window", "$sniffer", "$timeout", "$$animateReflow", function($window, $sniffer, $timeout, $$animateReflow) {
-            var CSS_PREFIX = "", TRANSITION_PROP, TRANSITIONEND_EVENT, ANIMATION_PROP, ANIMATIONEND_EVENT;
-            if (window.ontransitionend === undefined && window.onwebkittransitionend !== undefined) {
-                CSS_PREFIX = "-webkit-";
-                TRANSITION_PROP = "WebkitTransition";
-                TRANSITIONEND_EVENT = "webkitTransitionEnd transitionend";
-            } else {
-                TRANSITION_PROP = "transition";
-                TRANSITIONEND_EVENT = "transitionend";
-            }
-            if (window.onanimationend === undefined && window.onwebkitanimationend !== undefined) {
-                CSS_PREFIX = "-webkit-";
-                ANIMATION_PROP = "WebkitAnimation";
-                ANIMATIONEND_EVENT = "webkitAnimationEnd animationend";
-            } else {
-                ANIMATION_PROP = "animation";
-                ANIMATIONEND_EVENT = "animationend";
-            }
-            var DURATION_KEY = "Duration";
-            var PROPERTY_KEY = "Property";
-            var DELAY_KEY = "Delay";
-            var ANIMATION_ITERATION_COUNT_KEY = "IterationCount";
-            var NG_ANIMATE_PARENT_KEY = "$$ngAnimateKey";
-            var NG_ANIMATE_CSS_DATA_KEY = "$$ngAnimateCSS3Data";
-            var NG_ANIMATE_BLOCK_CLASS_NAME = "ng-animate-block-transitions";
-            var ELAPSED_TIME_MAX_DECIMAL_PLACES = 3;
-            var CLOSING_TIME_BUFFER = 1.5;
-            var ONE_SECOND = 1e3;
-            var lookupCache = {};
-            var parentCounter = 0;
-            var animationReflowQueue = [];
-            var cancelAnimationReflow;
-            function clearCacheAfterReflow() {
-                if (!cancelAnimationReflow) {
-                    cancelAnimationReflow = $$animateReflow(function() {
-                        animationReflowQueue = [];
-                        cancelAnimationReflow = null;
-                        lookupCache = {};
-                    });
-                }
-            }
-            function afterReflow(element, callback) {
-                if (cancelAnimationReflow) {
-                    cancelAnimationReflow();
-                }
-                animationReflowQueue.push(callback);
-                cancelAnimationReflow = $$animateReflow(function() {
-                    forEach(animationReflowQueue, function(fn) {
-                        fn();
-                    });
-                    animationReflowQueue = [];
-                    cancelAnimationReflow = null;
-                    lookupCache = {};
-                });
-            }
-            var closingTimer = null;
-            var closingTimestamp = 0;
-            var animationElementQueue = [];
-            function animationCloseHandler(element, totalTime) {
-                var node = extractElementNode(element);
-                element = angular.element(node);
-                animationElementQueue.push(element);
-                var futureTimestamp = Date.now() + totalTime;
-                if (futureTimestamp <= closingTimestamp) {
-                    return;
-                }
-                $timeout.cancel(closingTimer);
-                closingTimestamp = futureTimestamp;
-                closingTimer = $timeout(function() {
-                    closeAllAnimations(animationElementQueue);
-                    animationElementQueue = [];
-                }, totalTime, false);
-            }
-            function closeAllAnimations(elements) {
-                forEach(elements, function(element) {
-                    var elementData = element.data(NG_ANIMATE_CSS_DATA_KEY);
-                    if (elementData) {
-                        (elementData.closeAnimationFn || noop)();
-                    }
-                });
-            }
-            function getElementAnimationDetails(element, cacheKey) {
-                var data = cacheKey ? lookupCache[cacheKey] : null;
-                if (!data) {
-                    var transitionDuration = 0;
-                    var transitionDelay = 0;
-                    var animationDuration = 0;
-                    var animationDelay = 0;
-                    var transitionDelayStyle;
-                    var animationDelayStyle;
-                    var transitionDurationStyle;
-                    var transitionPropertyStyle;
-                    forEach(element, function(element) {
-                        if (element.nodeType == ELEMENT_NODE) {
-                            var elementStyles = $window.getComputedStyle(element) || {};
-                            transitionDurationStyle = elementStyles[TRANSITION_PROP + DURATION_KEY];
-                            transitionDuration = Math.max(parseMaxTime(transitionDurationStyle), transitionDuration);
-                            transitionPropertyStyle = elementStyles[TRANSITION_PROP + PROPERTY_KEY];
-                            transitionDelayStyle = elementStyles[TRANSITION_PROP + DELAY_KEY];
-                            transitionDelay = Math.max(parseMaxTime(transitionDelayStyle), transitionDelay);
-                            animationDelayStyle = elementStyles[ANIMATION_PROP + DELAY_KEY];
-                            animationDelay = Math.max(parseMaxTime(animationDelayStyle), animationDelay);
-                            var aDuration = parseMaxTime(elementStyles[ANIMATION_PROP + DURATION_KEY]);
-                            if (aDuration > 0) {
-                                aDuration *= parseInt(elementStyles[ANIMATION_PROP + ANIMATION_ITERATION_COUNT_KEY], 10) || 1;
+                    var usedIndicesLookup = {};
+                    var anchorGroups = {};
+                    forEach(refLookup, function(operations, key) {
+                        var from = operations.from;
+                        var to = operations.to;
+                        if (!from || !to) {
+                            var index = from ? from.animationID : to.animationID;
+                            var indexKey = index.toString();
+                            if (!usedIndicesLookup[indexKey]) {
+                                usedIndicesLookup[indexKey] = true;
+                                preparedAnimations.push(animations[index]);
                             }
-                            animationDuration = Math.max(aDuration, animationDuration);
+                            return;
                         }
-                    });
-                    data = {
-                        total: 0,
-                        transitionPropertyStyle: transitionPropertyStyle,
-                        transitionDurationStyle: transitionDurationStyle,
-                        transitionDelayStyle: transitionDelayStyle,
-                        transitionDelay: transitionDelay,
-                        transitionDuration: transitionDuration,
-                        animationDelayStyle: animationDelayStyle,
-                        animationDelay: animationDelay,
-                        animationDuration: animationDuration
-                    };
-                    if (cacheKey) {
-                        lookupCache[cacheKey] = data;
-                    }
-                }
-                return data;
-            }
-            function parseMaxTime(str) {
-                var maxValue = 0;
-                var values = angular.isString(str) ? str.split(/\s*,\s*/) : [];
-                forEach(values, function(value) {
-                    maxValue = Math.max(parseFloat(value) || 0, maxValue);
-                });
-                return maxValue;
-            }
-            function getCacheKey(element) {
-                var parentElement = element.parent();
-                var parentID = parentElement.data(NG_ANIMATE_PARENT_KEY);
-                if (!parentID) {
-                    parentElement.data(NG_ANIMATE_PARENT_KEY, ++parentCounter);
-                    parentID = parentCounter;
-                }
-                return parentID + "-" + extractElementNode(element).getAttribute("class");
-            }
-            function animateSetup(animationEvent, element, className, calculationDecorator) {
-                var cacheKey = getCacheKey(element);
-                var eventCacheKey = cacheKey + " " + className;
-                var itemIndex = lookupCache[eventCacheKey] ? ++lookupCache[eventCacheKey].total : 0;
-                var stagger = {};
-                if (itemIndex > 0) {
-                    var staggerClassName = className + "-stagger";
-                    var staggerCacheKey = cacheKey + " " + staggerClassName;
-                    var applyClasses = !lookupCache[staggerCacheKey];
-                    applyClasses && element.addClass(staggerClassName);
-                    stagger = getElementAnimationDetails(element, staggerCacheKey);
-                    applyClasses && element.removeClass(staggerClassName);
-                }
-                calculationDecorator = calculationDecorator || function(fn) {
-                    return fn();
-                };
-                element.addClass(className);
-                var formerData = element.data(NG_ANIMATE_CSS_DATA_KEY) || {};
-                var timings = calculationDecorator(function() {
-                    return getElementAnimationDetails(element, eventCacheKey);
-                });
-                var transitionDuration = timings.transitionDuration;
-                var animationDuration = timings.animationDuration;
-                if (transitionDuration === 0 && animationDuration === 0) {
-                    element.removeClass(className);
-                    return false;
-                }
-                element.data(NG_ANIMATE_CSS_DATA_KEY, {
-                    running: formerData.running || 0,
-                    itemIndex: itemIndex,
-                    stagger: stagger,
-                    timings: timings,
-                    closeAnimationFn: noop
-                });
-                var isCurrentlyAnimating = formerData.running > 0 || animationEvent == "setClass";
-                if (transitionDuration > 0) {
-                    blockTransitions(element, className, isCurrentlyAnimating);
-                }
-                if (animationDuration > 0 && stagger.animationDelay > 0 && stagger.animationDuration === 0) {
-                    blockKeyframeAnimations(element);
-                }
-                return true;
-            }
-            function isStructuralAnimation(className) {
-                return className == "ng-enter" || className == "ng-move" || className == "ng-leave";
-            }
-            function blockTransitions(element, className, isAnimating) {
-                if (isStructuralAnimation(className) || !isAnimating) {
-                    extractElementNode(element).style[TRANSITION_PROP + PROPERTY_KEY] = "none";
-                } else {
-                    element.addClass(NG_ANIMATE_BLOCK_CLASS_NAME);
-                }
-            }
-            function blockKeyframeAnimations(element) {
-                extractElementNode(element).style[ANIMATION_PROP] = "none 0s";
-            }
-            function unblockTransitions(element, className) {
-                var prop = TRANSITION_PROP + PROPERTY_KEY;
-                var node = extractElementNode(element);
-                if (node.style[prop] && node.style[prop].length > 0) {
-                    node.style[prop] = "";
-                }
-                element.removeClass(NG_ANIMATE_BLOCK_CLASS_NAME);
-            }
-            function unblockKeyframeAnimations(element) {
-                var prop = ANIMATION_PROP;
-                var node = extractElementNode(element);
-                if (node.style[prop] && node.style[prop].length > 0) {
-                    node.style[prop] = "";
-                }
-            }
-            function animateRun(animationEvent, element, className, activeAnimationComplete) {
-                var node = extractElementNode(element);
-                var elementData = element.data(NG_ANIMATE_CSS_DATA_KEY);
-                if (node.getAttribute("class").indexOf(className) == -1 || !elementData) {
-                    activeAnimationComplete();
-                    return;
-                }
-                var activeClassName = "";
-                forEach(className.split(" "), function(klass, i) {
-                    activeClassName += (i > 0 ? " " : "") + klass + "-active";
-                });
-                var stagger = elementData.stagger;
-                var timings = elementData.timings;
-                var itemIndex = elementData.itemIndex;
-                var maxDuration = Math.max(timings.transitionDuration, timings.animationDuration);
-                var maxDelay = Math.max(timings.transitionDelay, timings.animationDelay);
-                var maxDelayTime = maxDelay * ONE_SECOND;
-                var startTime = Date.now();
-                var css3AnimationEvents = ANIMATIONEND_EVENT + " " + TRANSITIONEND_EVENT;
-                var style = "", appliedStyles = [];
-                if (timings.transitionDuration > 0) {
-                    var propertyStyle = timings.transitionPropertyStyle;
-                    if (propertyStyle.indexOf("all") == -1) {
-                        style += CSS_PREFIX + "transition-property: " + propertyStyle + ";";
-                        style += CSS_PREFIX + "transition-duration: " + timings.transitionDurationStyle + ";";
-                        appliedStyles.push(CSS_PREFIX + "transition-property");
-                        appliedStyles.push(CSS_PREFIX + "transition-duration");
-                    }
-                }
-                if (itemIndex > 0) {
-                    if (stagger.transitionDelay > 0 && stagger.transitionDuration === 0) {
-                        var delayStyle = timings.transitionDelayStyle;
-                        style += CSS_PREFIX + "transition-delay: " + prepareStaggerDelay(delayStyle, stagger.transitionDelay, itemIndex) + "; ";
-                        appliedStyles.push(CSS_PREFIX + "transition-delay");
-                    }
-                    if (stagger.animationDelay > 0 && stagger.animationDuration === 0) {
-                        style += CSS_PREFIX + "animation-delay: " + prepareStaggerDelay(timings.animationDelayStyle, stagger.animationDelay, itemIndex) + "; ";
-                        appliedStyles.push(CSS_PREFIX + "animation-delay");
-                    }
-                }
-                if (appliedStyles.length > 0) {
-                    var oldStyle = node.getAttribute("style") || "";
-                    node.setAttribute("style", oldStyle + "; " + style);
-                }
-                element.on(css3AnimationEvents, onAnimationProgress);
-                element.addClass(activeClassName);
-                elementData.closeAnimationFn = function() {
-                    onEnd();
-                    activeAnimationComplete();
-                };
-                var staggerTime = itemIndex * (Math.max(stagger.animationDelay, stagger.transitionDelay) || 0);
-                var animationTime = (maxDelay + maxDuration) * CLOSING_TIME_BUFFER;
-                var totalTime = (staggerTime + animationTime) * ONE_SECOND;
-                elementData.running++;
-                animationCloseHandler(element, totalTime);
-                return onEnd;
-                function onEnd(cancelled) {
-                    element.off(css3AnimationEvents, onAnimationProgress);
-                    element.removeClass(activeClassName);
-                    animateClose(element, className);
-                    var node = extractElementNode(element);
-                    for (var i in appliedStyles) {
-                        node.style.removeProperty(appliedStyles[i]);
-                    }
-                }
-                function onAnimationProgress(event) {
-                    event.stopPropagation();
-                    var ev = event.originalEvent || event;
-                    var timeStamp = ev.$manualTimeStamp || ev.timeStamp || Date.now();
-                    var elapsedTime = parseFloat(ev.elapsedTime.toFixed(ELAPSED_TIME_MAX_DECIMAL_PLACES));
-                    if (Math.max(timeStamp - startTime, 0) >= maxDelayTime && elapsedTime >= maxDuration) {
-                        activeAnimationComplete();
-                    }
-                }
-            }
-            function prepareStaggerDelay(delayStyle, staggerDelay, index) {
-                var style = "";
-                forEach(delayStyle.split(","), function(val, i) {
-                    style += (i > 0 ? "," : "") + (index * staggerDelay + parseInt(val, 10)) + "s";
-                });
-                return style;
-            }
-            function animateBefore(animationEvent, element, className, calculationDecorator) {
-                if (animateSetup(animationEvent, element, className, calculationDecorator)) {
-                    return function(cancelled) {
-                        cancelled && animateClose(element, className);
-                    };
-                }
-            }
-            function animateAfter(animationEvent, element, className, afterAnimationComplete) {
-                if (element.data(NG_ANIMATE_CSS_DATA_KEY)) {
-                    return animateRun(animationEvent, element, className, afterAnimationComplete);
-                } else {
-                    animateClose(element, className);
-                    afterAnimationComplete();
-                }
-            }
-            function animate(animationEvent, element, className, animationComplete) {
-                var preReflowCancellation = animateBefore(animationEvent, element, className);
-                if (!preReflowCancellation) {
-                    clearCacheAfterReflow();
-                    animationComplete();
-                    return;
-                }
-                var cancel = preReflowCancellation;
-                afterReflow(element, function() {
-                    unblockTransitions(element, className);
-                    unblockKeyframeAnimations(element);
-                    cancel = animateAfter(animationEvent, element, className, animationComplete);
-                });
-                return function(cancelled) {
-                    (cancel || noop)(cancelled);
-                };
-            }
-            function animateClose(element, className) {
-                element.removeClass(className);
-                var data = element.data(NG_ANIMATE_CSS_DATA_KEY);
-                if (data) {
-                    if (data.running) {
-                        data.running--;
-                    }
-                    if (!data.running || data.running === 0) {
-                        element.removeData(NG_ANIMATE_CSS_DATA_KEY);
-                    }
-                }
-            }
-            return {
-                enter: function(element, animationCompleted) {
-                    return animate("enter", element, "ng-enter", animationCompleted);
-                },
-                leave: function(element, animationCompleted) {
-                    return animate("leave", element, "ng-leave", animationCompleted);
-                },
-                move: function(element, animationCompleted) {
-                    return animate("move", element, "ng-move", animationCompleted);
-                },
-                beforeSetClass: function(element, add, remove, animationCompleted) {
-                    var className = suffixClasses(remove, "-remove") + " " + suffixClasses(add, "-add");
-                    var cancellationMethod = animateBefore("setClass", element, className, function(fn) {
-                        var klass = element.attr("class");
-                        element.removeClass(remove);
-                        element.addClass(add);
-                        var timings = fn();
-                        element.attr("class", klass);
-                        return timings;
-                    });
-                    if (cancellationMethod) {
-                        afterReflow(element, function() {
-                            unblockTransitions(element, className);
-                            unblockKeyframeAnimations(element);
-                            animationCompleted();
+                        var fromAnimation = animations[from.animationID];
+                        var toAnimation = animations[to.animationID];
+                        var lookupKey = from.animationID.toString();
+                        if (!anchorGroups[lookupKey]) {
+                            var group = anchorGroups[lookupKey] = {
+                                beforeStart: function() {
+                                    fromAnimation.beforeStart();
+                                    toAnimation.beforeStart();
+                                },
+                                close: function() {
+                                    fromAnimation.close();
+                                    toAnimation.close();
+                                },
+                                classes: cssClassesIntersection(fromAnimation.classes, toAnimation.classes),
+                                from: fromAnimation,
+                                to: toAnimation,
+                                anchors: []
+                            };
+                            if (group.classes.length) {
+                                preparedAnimations.push(group);
+                            } else {
+                                preparedAnimations.push(fromAnimation);
+                                preparedAnimations.push(toAnimation);
+                            }
+                        }
+                        anchorGroups[lookupKey].anchors.push({
+                            out: from.element,
+                            "in": to.element
                         });
-                        return cancellationMethod;
-                    }
-                    clearCacheAfterReflow();
-                    animationCompleted();
-                },
-                beforeAddClass: function(element, className, animationCompleted) {
-                    var cancellationMethod = animateBefore("addClass", element, suffixClasses(className, "-add"), function(fn) {
-                        element.addClass(className);
-                        var timings = fn();
-                        element.removeClass(className);
-                        return timings;
                     });
-                    if (cancellationMethod) {
-                        afterReflow(element, function() {
-                            unblockTransitions(element, className);
-                            unblockKeyframeAnimations(element);
-                            animationCompleted();
-                        });
-                        return cancellationMethod;
+                    return preparedAnimations;
+                }
+                function cssClassesIntersection(a, b) {
+                    a = a.split(" ");
+                    b = b.split(" ");
+                    var matches = [];
+                    for (var i = 0; i < a.length; i++) {
+                        var aa = a[i];
+                        if (aa.substring(0, 3) === "ng-") continue;
+                        for (var j = 0; j < b.length; j++) {
+                            if (aa === b[j]) {
+                                matches.push(aa);
+                                break;
+                            }
+                        }
                     }
-                    clearCacheAfterReflow();
-                    animationCompleted();
-                },
-                setClass: function(element, add, remove, animationCompleted) {
-                    remove = suffixClasses(remove, "-remove");
-                    add = suffixClasses(add, "-add");
-                    var className = remove + " " + add;
-                    return animateAfter("setClass", element, className, animationCompleted);
-                },
-                addClass: function(element, className, animationCompleted) {
-                    return animateAfter("addClass", element, suffixClasses(className, "-add"), animationCompleted);
-                },
-                beforeRemoveClass: function(element, className, animationCompleted) {
-                    var cancellationMethod = animateBefore("removeClass", element, suffixClasses(className, "-remove"), function(fn) {
-                        var klass = element.attr("class");
-                        element.removeClass(className);
-                        var timings = fn();
-                        element.attr("class", klass);
-                        return timings;
-                    });
-                    if (cancellationMethod) {
-                        afterReflow(element, function() {
-                            unblockTransitions(element, className);
-                            unblockKeyframeAnimations(element);
-                            animationCompleted();
-                        });
-                        return cancellationMethod;
+                    return matches.join(" ");
+                }
+                function invokeFirstDriver(animationDetails, onBeforeClassesAppliedCb) {
+                    for (var i = drivers.length - 1; i >= 0; i--) {
+                        var driverName = drivers[i];
+                        if (!$injector.has(driverName)) continue;
+                        var factory = $injector.get(driverName);
+                        var driver = factory(animationDetails, onBeforeClassesAppliedCb);
+                        if (driver) {
+                            return driver;
+                        }
                     }
-                    animationCompleted();
-                },
-                removeClass: function(element, className, animationCompleted) {
-                    return animateAfter("removeClass", element, suffixClasses(className, "-remove"), animationCompleted);
+                }
+                function beforeStart() {
+                    element.addClass(NG_ANIMATE_CLASSNAME);
+                    if (tempClasses) {
+                        $$jqLite.addClass(element, tempClasses);
+                    }
+                }
+                function updateAnimationRunners(animation, newRunner) {
+                    if (animation.from && animation.to) {
+                        update(animation.from.element);
+                        update(animation.to.element);
+                    } else {
+                        update(animation.element);
+                    }
+                    function update(element) {
+                        getRunner(element).setHost(newRunner);
+                    }
+                }
+                function handleDestroyedElement() {
+                    var runner = getRunner(element);
+                    if (runner && (event !== "leave" || !options.$$domOperationFired)) {
+                        runner.end();
+                    }
+                }
+                function close(rejected) {
+                    element.off("$destroy", handleDestroyedElement);
+                    removeRunner(element);
+                    applyAnimationClasses(element, options);
+                    applyAnimationStyles(element, options);
+                    options.domOperation();
+                    if (tempClasses) {
+                        $$jqLite.removeClass(element, tempClasses);
+                    }
+                    element.removeClass(NG_ANIMATE_CLASSNAME);
+                    runner.complete(!rejected);
                 }
             };
-            function suffixClasses(classes, suffix) {
-                var className = "";
-                classes = angular.isArray(classes) ? classes : classes.split(/\s+/);
-                forEach(classes, function(klass, i) {
-                    if (klass && klass.length > 0) {
-                        className += (i > 0 ? " " : "") + klass + suffix;
-                    }
-                });
-                return className;
-            }
-        } ]);
-    } ]);
+        } ];
+    } ];
+    angular.module("ngAnimate", []).provider("$$body", $$BodyProvider).directive("ngAnimateChildren", $$AnimateChildrenDirective).factory("$$rAFMutex", $$rAFMutexFactory).factory("$$AnimateRunner", $$AnimateRunnerFactory).provider("$$animateQueue", $$AnimateQueueProvider).provider("$$animation", $$AnimationProvider).provider("$animateCss", $AnimateCssProvider).provider("$$animateCssDriver", $$AnimateCssDriverProvider).provider("$$animateJs", $$AnimateJsProvider).provider("$$animateJsDriver", $$AnimateJsDriverProvider);
 })(window, window.angular);
 if (typeof module !== "undefined" && typeof exports !== "undefined" && module.exports === exports) {
     module.exports = "ui.router";
@@ -24078,6 +25188,411 @@ function(t) {
     var _moment = utils_hooks__hooks;
     return _moment;
 });
+!function() {
+    "use strict";
+    function t(n) {
+        if (!n) throw new Error("No options passed to Waypoint constructor");
+        if (!n.element) throw new Error("No element option passed to Waypoint constructor");
+        if (!n.handler) throw new Error("No handler option passed to Waypoint constructor");
+        this.key = "waypoint-" + e, this.options = t.Adapter.extend({}, t.defaults, n), 
+        this.element = this.options.element, this.adapter = new t.Adapter(this.element), 
+        this.callback = n.handler, this.axis = this.options.horizontal ? "horizontal" : "vertical", 
+        this.enabled = this.options.enabled, this.triggerPoint = null, this.group = t.Group.findOrCreate({
+            name: this.options.group,
+            axis: this.axis
+        }), this.context = t.Context.findOrCreateByElement(this.options.context), t.offsetAliases[this.options.offset] && (this.options.offset = t.offsetAliases[this.options.offset]), 
+        this.group.add(this), this.context.add(this), i[this.key] = this, e += 1;
+    }
+    var e = 0, i = {};
+    t.prototype.queueTrigger = function(t) {
+        this.group.queueTrigger(this, t);
+    }, t.prototype.trigger = function(t) {
+        this.enabled && this.callback && this.callback.apply(this, t);
+    }, t.prototype.destroy = function() {
+        this.context.remove(this), this.group.remove(this), delete i[this.key];
+    }, t.prototype.disable = function() {
+        return this.enabled = !1, this;
+    }, t.prototype.enable = function() {
+        return this.context.refresh(), this.enabled = !0, this;
+    }, t.prototype.next = function() {
+        return this.group.next(this);
+    }, t.prototype.previous = function() {
+        return this.group.previous(this);
+    }, t.invokeAll = function(t) {
+        var e = [];
+        for (var n in i) e.push(i[n]);
+        for (var o = 0, r = e.length; r > o; o++) e[o][t]();
+    }, t.destroyAll = function() {
+        t.invokeAll("destroy");
+    }, t.disableAll = function() {
+        t.invokeAll("disable");
+    }, t.enableAll = function() {
+        t.invokeAll("enable");
+    }, t.refreshAll = function() {
+        t.Context.refreshAll();
+    }, t.viewportHeight = function() {
+        return window.innerHeight || document.documentElement.clientHeight;
+    }, t.viewportWidth = function() {
+        return document.documentElement.clientWidth;
+    }, t.adapters = [], t.defaults = {
+        context: window,
+        continuous: !0,
+        enabled: !0,
+        group: "default",
+        horizontal: !1,
+        offset: 0
+    }, t.offsetAliases = {
+        "bottom-in-view": function() {
+            return this.context.innerHeight() - this.adapter.outerHeight();
+        },
+        "right-in-view": function() {
+            return this.context.innerWidth() - this.adapter.outerWidth();
+        }
+    }, window.Waypoint = t;
+}(), function() {
+    "use strict";
+    function t(t) {
+        window.setTimeout(t, 1e3 / 60);
+    }
+    function e(t) {
+        this.element = t, this.Adapter = o.Adapter, this.adapter = new this.Adapter(t), 
+        this.key = "waypoint-context-" + i, this.didScroll = !1, this.didResize = !1, this.oldScroll = {
+            x: this.adapter.scrollLeft(),
+            y: this.adapter.scrollTop()
+        }, this.waypoints = {
+            vertical: {},
+            horizontal: {}
+        }, t.waypointContextKey = this.key, n[t.waypointContextKey] = this, i += 1, this.createThrottledScrollHandler(), 
+        this.createThrottledResizeHandler();
+    }
+    var i = 0, n = {}, o = window.Waypoint, r = window.onload;
+    e.prototype.add = function(t) {
+        var e = t.options.horizontal ? "horizontal" : "vertical";
+        this.waypoints[e][t.key] = t, this.refresh();
+    }, e.prototype.checkEmpty = function() {
+        var t = this.Adapter.isEmptyObject(this.waypoints.horizontal), e = this.Adapter.isEmptyObject(this.waypoints.vertical);
+        t && e && (this.adapter.off(".waypoints"), delete n[this.key]);
+    }, e.prototype.createThrottledResizeHandler = function() {
+        function t() {
+            e.handleResize(), e.didResize = !1;
+        }
+        var e = this;
+        this.adapter.on("resize.waypoints", function() {
+            e.didResize || (e.didResize = !0, o.requestAnimationFrame(t));
+        });
+    }, e.prototype.createThrottledScrollHandler = function() {
+        function t() {
+            e.handleScroll(), e.didScroll = !1;
+        }
+        var e = this;
+        this.adapter.on("scroll.waypoints", function() {
+            (!e.didScroll || o.isTouch) && (e.didScroll = !0, o.requestAnimationFrame(t));
+        });
+    }, e.prototype.handleResize = function() {
+        o.Context.refreshAll();
+    }, e.prototype.handleScroll = function() {
+        var t = {}, e = {
+            horizontal: {
+                newScroll: this.adapter.scrollLeft(),
+                oldScroll: this.oldScroll.x,
+                forward: "right",
+                backward: "left"
+            },
+            vertical: {
+                newScroll: this.adapter.scrollTop(),
+                oldScroll: this.oldScroll.y,
+                forward: "down",
+                backward: "up"
+            }
+        };
+        for (var i in e) {
+            var n = e[i], o = n.newScroll > n.oldScroll, r = o ? n.forward : n.backward;
+            for (var s in this.waypoints[i]) {
+                var l = this.waypoints[i][s], a = n.oldScroll < l.triggerPoint, h = n.newScroll >= l.triggerPoint, p = a && h, u = !a && !h;
+                (p || u) && (l.queueTrigger(r), t[l.group.id] = l.group);
+            }
+        }
+        for (var c in t) t[c].flushTriggers();
+        this.oldScroll = {
+            x: e.horizontal.newScroll,
+            y: e.vertical.newScroll
+        };
+    }, e.prototype.innerHeight = function() {
+        return this.element == this.element.window ? o.viewportHeight() : this.adapter.innerHeight();
+    }, e.prototype.remove = function(t) {
+        delete this.waypoints[t.axis][t.key], this.checkEmpty();
+    }, e.prototype.innerWidth = function() {
+        return this.element == this.element.window ? o.viewportWidth() : this.adapter.innerWidth();
+    }, e.prototype.destroy = function() {
+        var t = [];
+        for (var e in this.waypoints) for (var i in this.waypoints[e]) t.push(this.waypoints[e][i]);
+        for (var n = 0, o = t.length; o > n; n++) t[n].destroy();
+    }, e.prototype.refresh = function() {
+        var t, e = this.element == this.element.window, i = this.adapter.offset(), n = {};
+        this.handleScroll(), t = {
+            horizontal: {
+                contextOffset: e ? 0 : i.left,
+                contextScroll: e ? 0 : this.oldScroll.x,
+                contextDimension: this.innerWidth(),
+                oldScroll: this.oldScroll.x,
+                forward: "right",
+                backward: "left",
+                offsetProp: "left"
+            },
+            vertical: {
+                contextOffset: e ? 0 : i.top,
+                contextScroll: e ? 0 : this.oldScroll.y,
+                contextDimension: this.innerHeight(),
+                oldScroll: this.oldScroll.y,
+                forward: "down",
+                backward: "up",
+                offsetProp: "top"
+            }
+        };
+        for (var o in t) {
+            var r = t[o];
+            for (var s in this.waypoints[o]) {
+                var l, a, h, p, u, c = this.waypoints[o][s], f = c.options.offset, d = c.triggerPoint, y = 0, g = null == d;
+                c.element !== c.element.window && (y = c.adapter.offset()[r.offsetProp]), "function" == typeof f ? f = f.apply(c) : "string" == typeof f && (f = parseFloat(f), 
+                c.options.offset.indexOf("%") > -1 && (f = Math.ceil(r.contextDimension * f / 100))), 
+                l = r.contextScroll - r.contextOffset, c.triggerPoint = y + l - f, a = d < r.oldScroll, 
+                h = c.triggerPoint >= r.oldScroll, p = a && h, u = !a && !h, !g && p ? (c.queueTrigger(r.backward), 
+                n[c.group.id] = c.group) : !g && u ? (c.queueTrigger(r.forward), n[c.group.id] = c.group) : g && r.oldScroll >= c.triggerPoint && (c.queueTrigger(r.forward), 
+                n[c.group.id] = c.group);
+            }
+        }
+        for (var w in n) n[w].flushTriggers();
+        return this;
+    }, e.findOrCreateByElement = function(t) {
+        return e.findByElement(t) || new e(t);
+    }, e.refreshAll = function() {
+        for (var t in n) n[t].refresh();
+    }, e.findByElement = function(t) {
+        return n[t.waypointContextKey];
+    }, window.onload = function() {
+        r && r(), e.refreshAll();
+    }, o.requestAnimationFrame = function(e) {
+        var i = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || t;
+        i.call(window, e);
+    }, o.Context = e;
+}(), function() {
+    "use strict";
+    function t(t, e) {
+        return t.triggerPoint - e.triggerPoint;
+    }
+    function e(t, e) {
+        return e.triggerPoint - t.triggerPoint;
+    }
+    function i(t) {
+        this.name = t.name, this.axis = t.axis, this.id = this.name + "-" + this.axis, this.waypoints = [], 
+        this.clearTriggerQueues(), n[this.axis][this.name] = this;
+    }
+    var n = {
+        vertical: {},
+        horizontal: {}
+    }, o = window.Waypoint;
+    i.prototype.add = function(t) {
+        this.waypoints.push(t);
+    }, i.prototype.clearTriggerQueues = function() {
+        this.triggerQueues = {
+            up: [],
+            down: [],
+            left: [],
+            right: []
+        };
+    }, i.prototype.flushTriggers = function() {
+        for (var i in this.triggerQueues) {
+            var n = this.triggerQueues[i], o = "up" === i || "left" === i;
+            n.sort(o ? e : t);
+            for (var r = 0, s = n.length; s > r; r += 1) {
+                var l = n[r];
+                (l.options.continuous || r === n.length - 1) && l.trigger([ i ]);
+            }
+        }
+        this.clearTriggerQueues();
+    }, i.prototype.next = function(e) {
+        this.waypoints.sort(t);
+        var i = o.Adapter.inArray(e, this.waypoints), n = i === this.waypoints.length - 1;
+        return n ? null : this.waypoints[i + 1];
+    }, i.prototype.previous = function(e) {
+        this.waypoints.sort(t);
+        var i = o.Adapter.inArray(e, this.waypoints);
+        return i ? this.waypoints[i - 1] : null;
+    }, i.prototype.queueTrigger = function(t, e) {
+        this.triggerQueues[e].push(t);
+    }, i.prototype.remove = function(t) {
+        var e = o.Adapter.inArray(t, this.waypoints);
+        e > -1 && this.waypoints.splice(e, 1);
+    }, i.prototype.first = function() {
+        return this.waypoints[0];
+    }, i.prototype.last = function() {
+        return this.waypoints[this.waypoints.length - 1];
+    }, i.findOrCreate = function(t) {
+        return n[t.axis][t.name] || new i(t);
+    }, o.Group = i;
+}(), function() {
+    "use strict";
+    function t(t) {
+        return t === t.window;
+    }
+    function e(e) {
+        return t(e) ? e : e.defaultView;
+    }
+    function i(t) {
+        this.element = t, this.handlers = {};
+    }
+    var n = window.Waypoint;
+    i.prototype.innerHeight = function() {
+        var e = t(this.element);
+        return e ? this.element.innerHeight : this.element.clientHeight;
+    }, i.prototype.innerWidth = function() {
+        var e = t(this.element);
+        return e ? this.element.innerWidth : this.element.clientWidth;
+    }, i.prototype.off = function(t, e) {
+        function i(t, e, i) {
+            for (var n = 0, o = e.length - 1; o > n; n++) {
+                var r = e[n];
+                i && i !== r || t.removeEventListener(r);
+            }
+        }
+        var n = t.split("."), o = n[0], r = n[1], s = this.element;
+        if (r && this.handlers[r] && o) i(s, this.handlers[r][o], e), this.handlers[r][o] = []; else if (o) for (var l in this.handlers) i(s, this.handlers[l][o] || [], e), 
+        this.handlers[l][o] = []; else if (r && this.handlers[r]) {
+            for (var a in this.handlers[r]) i(s, this.handlers[r][a], e);
+            this.handlers[r] = {};
+        }
+    }, i.prototype.offset = function() {
+        if (!this.element.ownerDocument) return null;
+        var t = this.element.ownerDocument.documentElement, i = e(this.element.ownerDocument), n = {
+            top: 0,
+            left: 0
+        };
+        return this.element.getBoundingClientRect && (n = this.element.getBoundingClientRect()), 
+        {
+            top: n.top + i.pageYOffset - t.clientTop,
+            left: n.left + i.pageXOffset - t.clientLeft
+        };
+    }, i.prototype.on = function(t, e) {
+        var i = t.split("."), n = i[0], o = i[1] || "__default", r = this.handlers[o] = this.handlers[o] || {}, s = r[n] = r[n] || [];
+        s.push(e), this.element.addEventListener(n, e);
+    }, i.prototype.outerHeight = function(e) {
+        var i, n = this.innerHeight();
+        return e && !t(this.element) && (i = window.getComputedStyle(this.element), n += parseInt(i.marginTop, 10), 
+        n += parseInt(i.marginBottom, 10)), n;
+    }, i.prototype.outerWidth = function(e) {
+        var i, n = this.innerWidth();
+        return e && !t(this.element) && (i = window.getComputedStyle(this.element), n += parseInt(i.marginLeft, 10), 
+        n += parseInt(i.marginRight, 10)), n;
+    }, i.prototype.scrollLeft = function() {
+        var t = e(this.element);
+        return t ? t.pageXOffset : this.element.scrollLeft;
+    }, i.prototype.scrollTop = function() {
+        var t = e(this.element);
+        return t ? t.pageYOffset : this.element.scrollTop;
+    }, i.extend = function() {
+        function t(t, e) {
+            if ("object" == typeof t && "object" == typeof e) for (var i in e) e.hasOwnProperty(i) && (t[i] = e[i]);
+            return t;
+        }
+        for (var e = Array.prototype.slice.call(arguments), i = 1, n = e.length; n > i; i++) t(e[0], e[i]);
+        return e[0];
+    }, i.inArray = function(t, e, i) {
+        return null == e ? -1 : e.indexOf(t, i);
+    }, i.isEmptyObject = function(t) {
+        for (var e in t) return !1;
+        return !0;
+    }, n.adapters.push({
+        name: "noframework",
+        Adapter: i
+    }), n.Adapter = i;
+}();
+(function() {
+    var root = this;
+    function fillString(str) {
+        var blockAmount = (str.length + 8 >> 6) + 1, blocks = [], i;
+        for (i = 0; i < blockAmount * 16; i++) {
+            blocks[i] = 0;
+        }
+        for (i = 0; i < str.length; i++) {
+            blocks[i >> 2] |= str.charCodeAt(i) << 24 - (i & 3) * 8;
+        }
+        blocks[i >> 2] |= 128 << 24 - (i & 3) * 8;
+        blocks[blockAmount * 16 - 1] = str.length * 8;
+        return blocks;
+    }
+    function binToHex(binArray) {
+        var hexString = "0123456789abcdef", str = "", i;
+        for (i = 0; i < binArray.length * 4; i++) {
+            str += hexString.charAt(binArray[i >> 2] >> (3 - i % 4) * 8 + 4 & 15) + hexString.charAt(binArray[i >> 2] >> (3 - i % 4) * 8 & 15);
+        }
+        return str;
+    }
+    function coreFunction(blockArray) {
+        var w = [], a = 1732584193, b = 4023233417, c = 2562383102, d = 271733878, e = 3285377520, olda, oldb, oldc, oldd, olde, t, i, j;
+        for (i = 0; i < blockArray.length; i += 16) {
+            olda = a;
+            oldb = b;
+            oldc = c;
+            oldd = d;
+            olde = e;
+            for (j = 0; j < 80; j++) {
+                if (j < 16) {
+                    w[j] = blockArray[i + j];
+                } else {
+                    w[j] = cyclicShift(w[j - 3] ^ w[j - 8] ^ w[j - 14] ^ w[j - 16], 1);
+                }
+                t = modPlus(modPlus(cyclicShift(a, 5), ft(j, b, c, d)), modPlus(modPlus(e, w[j]), kt(j)));
+                e = d;
+                d = c;
+                c = cyclicShift(b, 30);
+                b = a;
+                a = t;
+            }
+            a = modPlus(a, olda);
+            b = modPlus(b, oldb);
+            c = modPlus(c, oldc);
+            d = modPlus(d, oldd);
+            e = modPlus(e, olde);
+        }
+        return [ a, b, c, d, e ];
+    }
+    function ft(t, b, c, d) {
+        if (t < 20) {
+            return b & c | ~b & d;
+        } else if (t < 40) {
+            return b ^ c ^ d;
+        } else if (t < 60) {
+            return b & c | b & d | c & d;
+        } else {
+            return b ^ c ^ d;
+        }
+    }
+    function kt(t) {
+        return t < 20 ? 1518500249 : t < 40 ? 1859775393 : t < 60 ? 2400959708 : 3395469782;
+    }
+    function modPlus(x, y) {
+        var low = (x & 65535) + (y & 65535), high = (x >> 16) + (y >> 16) + (low >> 16);
+        return high << 16 | low & 65535;
+    }
+    function cyclicShift(num, k) {
+        return num << k | num >>> 32 - k;
+    }
+    function sha1(s) {
+        return binToHex(coreFunction(fillString(s)));
+    }
+    if (typeof define === "function" && typeof define.amd) {
+        define(function() {
+            return sha1;
+        });
+    } else if (typeof exports !== "undefined") {
+        if (typeof module !== "undefined" && module.exports) {
+            exports = module.exports = sha1;
+        }
+        exports.sha1 = sha1;
+    } else {
+        root.sha1 = sha1;
+    }
+}).call(this);
 (function e(t, n, r) {
     function s(o, u) {
         if (!n[o]) {
@@ -25624,6 +27139,335 @@ angular.module("prismic.io", []).provider("Prismic", function() {
         angularMoment(angular, (typeof global !== "undefined" ? global : window).moment);
     }
 })();
+(function(angular, analytics) {
+    "use strict";
+    var angulartics = window.angulartics || (window.angulartics = {});
+    angulartics.waitForVendorCount = 0;
+    angulartics.waitForVendorApi = function(objectName, delay, containsField, registerFn, onTimeout) {
+        if (!onTimeout) {
+            angulartics.waitForVendorCount++;
+        }
+        if (!registerFn) {
+            registerFn = containsField;
+            containsField = undefined;
+        }
+        if (!Object.prototype.hasOwnProperty.call(window, objectName) || containsField !== undefined && window[objectName][containsField] === undefined) {
+            setTimeout(function() {
+                angulartics.waitForVendorApi(objectName, delay, containsField, registerFn, true);
+            }, delay);
+        } else {
+            angulartics.waitForVendorCount--;
+            registerFn(window[objectName]);
+        }
+    };
+    angular.module("angulartics", []).provider("$analytics", function() {
+        var settings = {
+            pageTracking: {
+                autoTrackFirstPage: true,
+                autoTrackVirtualPages: true,
+                trackRelativePath: false,
+                autoBasePath: false,
+                basePath: ""
+            },
+            eventTracking: {},
+            bufferFlushDelay: 1e3,
+            developerMode: false
+        };
+        var knownHandlers = [ "pageTrack", "eventTrack", "setAlias", "setUsername", "setUserProperties", "setUserPropertiesOnce", "setSuperProperties", "setSuperPropertiesOnce" ];
+        var cache = {};
+        var handlers = {};
+        var bufferedHandler = function(handlerName) {
+            return function() {
+                if (angulartics.waitForVendorCount) {
+                    if (!cache[handlerName]) {
+                        cache[handlerName] = [];
+                    }
+                    cache[handlerName].push(arguments);
+                }
+            };
+        };
+        var updateHandlers = function(handlerName, fn) {
+            if (!handlers[handlerName]) {
+                handlers[handlerName] = [];
+            }
+            handlers[handlerName].push(fn);
+            return function() {
+                var handlerArgs = arguments;
+                angular.forEach(handlers[handlerName], function(handler) {
+                    handler.apply(this, handlerArgs);
+                }, this);
+            };
+        };
+        var api = {
+            settings: settings
+        };
+        var onTimeout = function(fn, delay) {
+            if (delay) {
+                setTimeout(fn, delay);
+            } else {
+                fn();
+            }
+        };
+        var provider = {
+            $get: function() {
+                return api;
+            },
+            api: api,
+            settings: settings,
+            virtualPageviews: function(value) {
+                this.settings.pageTracking.autoTrackVirtualPages = value;
+            },
+            firstPageview: function(value) {
+                this.settings.pageTracking.autoTrackFirstPage = value;
+            },
+            withBase: function(value) {
+                this.settings.pageTracking.basePath = value ? angular.element(document).find("base").attr("href") : "";
+            },
+            withAutoBase: function(value) {
+                this.settings.pageTracking.autoBasePath = value;
+            },
+            developerMode: function(value) {
+                this.settings.developerMode = value;
+            }
+        };
+        var register = function(handlerName, fn) {
+            api[handlerName] = updateHandlers(handlerName, fn);
+            var handlerSettings = settings[handlerName];
+            var handlerDelay = handlerSettings ? handlerSettings.bufferFlushDelay : null;
+            var delay = handlerDelay !== null ? handlerDelay : settings.bufferFlushDelay;
+            angular.forEach(cache[handlerName], function(args, index) {
+                onTimeout(function() {
+                    fn.apply(this, args);
+                }, index * delay);
+            });
+        };
+        var capitalize = function(input) {
+            return input.replace(/^./, function(match) {
+                return match.toUpperCase();
+            });
+        };
+        var installHandlerRegisterFunction = function(handlerName) {
+            var registerName = "register" + capitalize(handlerName);
+            provider[registerName] = function(fn) {
+                register(handlerName, fn);
+            };
+            api[handlerName] = updateHandlers(handlerName, bufferedHandler(handlerName));
+        };
+        angular.forEach(knownHandlers, installHandlerRegisterFunction);
+        return provider;
+    }).run([ "$rootScope", "$window", "$analytics", "$injector", function($rootScope, $window, $analytics, $injector) {
+        if ($analytics.settings.pageTracking.autoTrackFirstPage) {
+            $injector.invoke([ "$location", function($location) {
+                var noRoutesOrStates = true;
+                if ($injector.has("$route")) {
+                    var $route = $injector.get("$route");
+                    for (var route in $route.routes) {
+                        noRoutesOrStates = false;
+                        break;
+                    }
+                } else if ($injector.has("$state")) {
+                    var $state = $injector.get("$state");
+                    for (var state in $state.get()) {
+                        noRoutesOrStates = false;
+                        break;
+                    }
+                }
+                if (noRoutesOrStates) {
+                    if ($analytics.settings.pageTracking.autoBasePath) {
+                        $analytics.settings.pageTracking.basePath = $window.location.pathname;
+                    }
+                    if ($analytics.settings.pageTracking.trackRelativePath) {
+                        var url = $analytics.settings.pageTracking.basePath + $location.url();
+                        $analytics.pageTrack(url, $location);
+                    } else {
+                        $analytics.pageTrack($location.absUrl(), $location);
+                    }
+                }
+            } ]);
+        }
+        if ($analytics.settings.pageTracking.autoTrackVirtualPages) {
+            $injector.invoke([ "$location", function($location) {
+                if ($analytics.settings.pageTracking.autoBasePath) {
+                    $analytics.settings.pageTracking.basePath = $window.location.pathname + "#";
+                }
+                var noRoutesOrStates = true;
+                if ($injector.has("$route")) {
+                    var $route = $injector.get("$route");
+                    for (var route in $route.routes) {
+                        noRoutesOrStates = false;
+                        break;
+                    }
+                    $rootScope.$on("$routeChangeSuccess", function(event, current) {
+                        if (current && (current.$$route || current).redirectTo) return;
+                        var url = $analytics.settings.pageTracking.basePath + $location.url();
+                        $analytics.pageTrack(url, $location);
+                    });
+                }
+                if ($injector.has("$state")) {
+                    noRoutesOrStates = false;
+                    $rootScope.$on("$stateChangeSuccess", function(event, current) {
+                        var url = $analytics.settings.pageTracking.basePath + $location.url();
+                        $analytics.pageTrack(url, $location);
+                    });
+                }
+                if (noRoutesOrStates) {
+                    $rootScope.$on("$locationChangeSuccess", function(event, current) {
+                        if (current && (current.$$route || current).redirectTo) return;
+                        if ($analytics.settings.pageTracking.trackRelativePath) {
+                            var url = $analytics.settings.pageTracking.basePath + $location.url();
+                            $analytics.pageTrack(url, $location);
+                        } else {
+                            $analytics.pageTrack($location.absUrl(), $location);
+                        }
+                    });
+                }
+            } ]);
+        }
+        if ($analytics.settings.developerMode) {
+            angular.forEach($analytics, function(attr, name) {
+                if (typeof attr === "function") {
+                    $analytics[name] = function() {};
+                }
+            });
+        }
+    } ]).directive("analyticsOn", [ "$analytics", function($analytics) {
+        function isCommand(element) {
+            return [ "a:", "button:", "button:button", "button:submit", "input:button", "input:submit" ].indexOf(element.tagName.toLowerCase() + ":" + (element.type || "")) >= 0;
+        }
+        function inferEventType(element) {
+            if (isCommand(element)) return "click";
+            return "click";
+        }
+        function inferEventName(element) {
+            if (isCommand(element)) return element.innerText || element.value;
+            return element.id || element.name || element.tagName;
+        }
+        function isProperty(name) {
+            return name.substr(0, 9) === "analytics" && [ "On", "Event", "If", "Properties", "EventType" ].indexOf(name.substr(9)) === -1;
+        }
+        function propertyName(name) {
+            var s = name.slice(9);
+            if (typeof s !== "undefined" && s !== null && s.length > 0) {
+                return s.substring(0, 1).toLowerCase() + s.substring(1);
+            } else {
+                return s;
+            }
+        }
+        return {
+            restrict: "A",
+            link: function($scope, $element, $attrs) {
+                var eventType = $attrs.analyticsOn || inferEventType($element[0]);
+                var trackingData = {};
+                angular.forEach($attrs.$attr, function(attr, name) {
+                    if (isProperty(name)) {
+                        trackingData[propertyName(name)] = $attrs[name];
+                        $attrs.$observe(name, function(value) {
+                            trackingData[propertyName(name)] = value;
+                        });
+                    }
+                });
+                angular.element($element[0]).bind(eventType, function($event) {
+                    var eventName = $attrs.analyticsEvent || inferEventName($element[0]);
+                    trackingData.eventType = $event.type;
+                    if ($attrs.analyticsIf) {
+                        if (!$scope.$eval($attrs.analyticsIf)) {
+                            return;
+                        }
+                    }
+                    if ($attrs.analyticsProperties) {
+                        angular.extend(trackingData, $scope.$eval($attrs.analyticsProperties));
+                    }
+                    $analytics.eventTrack(eventName, trackingData);
+                });
+            }
+        };
+    } ]);
+})(angular);
+(function(angular) {
+    "use strict";
+    angular.module("angulartics.scroll", [ "angulartics" ]).factory("$waypoint", function() {
+        return function(options) {
+            return new Waypoint(options);
+        };
+    }).directive("analyticsOn", [ "$analytics", "$waypoint", function($analytics, $waypoint) {
+        function isProperty(name) {
+            return name.substr(0, 8) === "scrollby";
+        }
+        function cast(value) {
+            if (value === "" || value === "true") {
+                return true;
+            } else if (value === "false") {
+                return false;
+            } else {
+                return value;
+            }
+        }
+        return {
+            restrict: "A",
+            priority: 5,
+            scope: false,
+            link: function($scope, $element, $attrs) {
+                if ($attrs.analyticsOn !== "scrollby") return;
+                var properties = {
+                    handler: function() {
+                        $element.triggerHandler("scrollby");
+                        if (this.options.triggeronce) {
+                            this.destroy();
+                        }
+                    },
+                    element: $element[0],
+                    continuous: false,
+                    triggeronce: true
+                };
+                angular.forEach($attrs.$attr, function(attr, name) {
+                    if (isProperty(attr)) {
+                        properties[name.slice(8, 9).toLowerCase() + name.slice(9)] = cast($attrs[name]);
+                    }
+                });
+                $waypoint(properties);
+            }
+        };
+    } ]);
+})(angular);
+!function(window, angular, undefined) {
+    "use strict";
+    angular.module("angulartics.google.analytics", [ "angulartics" ]).config([ "$analyticsProvider", function($analyticsProvider) {
+        $analyticsProvider.settings.pageTracking.trackRelativePath = !0, $analyticsProvider.settings.ga = {
+            additionalAccountNames: undefined,
+            userId: null
+        }, $analyticsProvider.registerPageTrack(function(path) {
+            window._gaq && (_gaq.push([ "_trackPageview", path ]), angular.forEach($analyticsProvider.settings.ga.additionalAccountNames, function(accountName) {
+                _gaq.push([ accountName + "._trackPageview", path ]);
+            })), window.ga && ($analyticsProvider.settings.ga.userId && ga("set", "&uid", $analyticsProvider.settings.ga.userId), 
+            ga("send", "pageview", path), angular.forEach($analyticsProvider.settings.ga.additionalAccountNames, function(accountName) {
+                ga(accountName + ".send", "pageview", path);
+            }));
+        }), $analyticsProvider.registerEventTrack(function(action, properties) {
+            if (properties && properties.category || (properties = properties || {}, properties.category = "Event"), 
+            properties.value) {
+                var parsed = parseInt(properties.value, 10);
+                properties.value = isNaN(parsed) ? 0 : parsed;
+            }
+            if (window.ga) {
+                for (var eventOptions = {
+                    eventCategory: properties.category,
+                    eventAction: action,
+                    eventLabel: properties.label,
+                    eventValue: properties.value,
+                    nonInteraction: properties.noninteraction,
+                    page: properties.page || window.location.hash.substring(1) || window.location.pathname,
+                    userId: $analyticsProvider.settings.ga.userId
+                }, idx = 1; 20 >= idx; idx++) properties["dimension" + idx.toString()] && (eventOptions["dimension" + idx.toString()] = properties["dimension" + idx.toString()]), 
+                properties["metric" + idx.toString()] && (eventOptions["metric" + idx.toString()] = properties["metric" + idx.toString()]);
+                ga("send", "event", eventOptions), angular.forEach($analyticsProvider.settings.ga.additionalAccountNames, function(accountName) {
+                    ga(accountName + ".send", "event", eventOptions);
+                });
+            } else window._gaq && _gaq.push([ "_trackEvent", properties.category, action, properties.label, properties.value, properties.noninteraction ]);
+        }), $analyticsProvider.registerSetUsername(function(userId) {
+            $analyticsProvider.settings.ga.userId = userId;
+        });
+    } ]);
+}(window, window.angular);
 angular.module("templates", []).run([ "$templateCache", function($templateCache) {
     $templateCache.put("utils/scrollable.html", '<div ng-mouseenter="hover=true" ng-mouseleave="hover=false">\n  <span ng-if="!hover">{{perc | number: 0}}%</span><span ng-if="hover">&uarr; Top</span>\n</div>\n');
     $templateCache.put("features/_feature/_feature.html", "\n");
@@ -25814,15 +27658,49 @@ angular.module("filters", []).filter("titlecase", function() {
             $timeout(processGallery, 0);
         }
     };
-}).directive("scrollable", function(scroll) {
+}).directive("scrollable", function(scroll, $analytics) {
     return {
         templateUrl: "utils/scrollable.html",
         restrict: "C",
         link: function(scope, el, attrs) {
             scope.perc = 0;
             scroll.bind();
+            events = {
+                "25": false,
+                "50": false,
+                "75": false,
+                "100": false
+            };
             scope.$on("scroll", function(event, data) {
                 scope.perc = data.y / data.scrollHeight * 100;
+                if (scope.perc >= 25 && scope.perc < 50 && !events["25"]) {
+                    events["25"] = true;
+                    $analytics.eventTrack("storyScroll", {
+                        label: "label",
+                        value: 25
+                    });
+                }
+                if (scope.perc >= 50 && scope.perc < 75 && !events["50"]) {
+                    events["50"] = true;
+                    $analytics.eventTrack("storyScroll", {
+                        label: "label",
+                        value: 50
+                    });
+                }
+                if (scope.perc >= 75 && scope.perc < 100 && !events["75"]) {
+                    events["75"] = true;
+                    $analytics.eventTrack("storyScroll", {
+                        label: "label",
+                        value: 75
+                    });
+                }
+                if (scope.perc == 100 && !events["100"]) {
+                    events["10"] = true;
+                    $analytics.eventTrack("storyScroll", {
+                        label: "label",
+                        value: 100
+                    });
+                }
             });
         }
     };
@@ -25970,6 +27848,9 @@ angular.module("states", []).run(function($rootScope, $state) {}).config(functio
 });
 angular.module("<%= name%>", []).controller("<%= name%>Controller", function($scope) {});
 angular.module("home", []).controller("homeController", function($scope) {});
+angular.module("stories", []).controller("storiesController", function($scope, Stories) {
+    $scope.stories = Stories.results;
+});
 angular.module("story", []).controller("storyController", function($scope, Stories, $stateParams) {
     $scope.story = Stories.results.filter(function(s, i) {
         if (s.slugs.indexOf($stateParams.slug) > -1) {
@@ -25999,10 +27880,7 @@ angular.module("talk", []).controller("talkController", function($scope, Stories
         stop = true;
     });
 });
-angular.module("stories", []).controller("storiesController", function($scope, Stories) {
-    $scope.stories = Stories.results;
-});
-angular.module("app", [ "ui.router", "ct.ui.router.extras", "ngSanitize", "ngCachedResource", "prismic.io", "angularMoment", "ngScroll", "templates", "states", "services", "filters", "home", "talk", "stories", "story" ]).config(function(PrismicProvider, $logProvider) {
+angular.module("app", [ "ui.router", "ct.ui.router.extras", "ngSanitize", "ngCachedResource", "prismic.io", "angularMoment", "ngScroll", "angulartics", "angulartics.google.analytics", "templates", "states", "services", "filters", "home", "talk", "stories", "story" ]).config(function(PrismicProvider, $logProvider) {
     PrismicProvider.setApiEndpoint("https://samgarson.prismic.io/api");
     PrismicProvider.setLinkResolver(function(ctx, doc) {
         return "stories/" + doc.id;
