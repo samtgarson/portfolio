@@ -68,6 +68,10 @@ angular.module('app', [
             console.log(error);
         });
 
+        $scope.$on('title', function(e, title) {
+            $scope.title = $filter('titlecase')(title) + ' | Sam Garson';
+        });
+
         $scope.goBack = function() {
             var states = {
                 'parent.story': 'parent.stories',

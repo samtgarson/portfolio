@@ -6,4 +6,5 @@ angular.module('story', [])
                 return true;
             } else return false;
         })[0];
+        $scope.$emit('title', $scope.story.fragments['story.title'].value[0].text);
     });

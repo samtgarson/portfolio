@@ -27862,9 +27862,6 @@ angular.module("states", []).run(function($rootScope, $state) {}).config(functio
     });
 });
 angular.module("<%= name%>", []).controller("<%= name%>Controller", function($scope) {});
-angular.module("stories", []).controller("storiesController", function($scope, Stories) {
-    $scope.stories = Stories.results;
-});
 angular.module("home", []).controller("homeController", function($scope) {});
 angular.module("story", []).controller("storyController", function($scope, Stories, $stateParams) {
     $scope.story = Stories.results.filter(function(s, i) {
@@ -27873,6 +27870,7 @@ angular.module("story", []).controller("storyController", function($scope, Stori
             return true;
         } else return false;
     })[0];
+    $scope.$emit("title", $scope.story.fragments["story.title"].value[0].text);
 });
 angular.module("talk", []).controller("talkController", function($scope, Stories, $timeout) {
     $scope.quotes = Stories.results.filter(function(n) {
@@ -27894,6 +27892,9 @@ angular.module("talk", []).controller("talkController", function($scope, Stories
     $scope.$on("$destroy", function() {
         stop = true;
     });
+});
+angular.module("stories", []).controller("storiesController", function($scope, Stories) {
+    $scope.stories = Stories.results;
 });
 angular.module("app", [ "ui.router", "ct.ui.router.extras", "ngSanitize", "ngCachedResource", "prismic.io", "angularMoment", "ngScroll", "angulartics", "angulartics.google.analytics", "templates", "states", "services", "filters", "home", "talk", "stories", "story" ]).config(function(PrismicProvider, $logProvider) {
     PrismicProvider.setApiEndpoint("https://samgarson.prismic.io/api");
@@ -27929,6 +27930,9 @@ angular.module("app", [ "ui.router", "ct.ui.router.extras", "ngSanitize", "ngCac
     });
     $scope.$on("$stateChangeError", function(e, toState, toParams, fromState, fromParams, error) {
         console.log(error);
+    });
+    $scope.$on("title", function(e, title) {
+        $scope.title = $filter("titlecase")(title) + " | Sam Garson";
     });
     $scope.goBack = function() {
         var states = {
