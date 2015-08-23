@@ -134,8 +134,8 @@ gulp.task('default', ['connect', 'slim_index', 'sass:development', 'tpl', 'js:de
 // Build JS and SASS
 gulp.task('build', ['tpl', 'slim_index', 'js:build', 'sass:build'], function () {
     gulp.src(['./build/**/*', './src/**/*'])
-        .pipe($.git.commit('BUILD'))
-        .pipe($.git.push());
+        .pipe($.git.commit('BUILD'));
+        // .pipe($.git.push());
 });
 
 // Create new feature with --name
