@@ -237,7 +237,7 @@ angular.module('filters', [])
             }
         };
     })
-    .directive('scrollable', function(scroll, $analytics){
+    .directive('scrollable', function(scroll, $analytics, $location){
         // Runs during compile
         return {
             templateUrl: "utils/scrollable.html",
@@ -245,29 +245,46 @@ angular.module('filters', [])
             link: function(scope, el, attrs) {
                 scope.perc = 0;
                 scroll.bind();
-                events = {
+                var events = {
                     '25': false,
                     '50': false,
                     '75': false,
                     '100': false
-                };
+                },
+                title = $location.$$path.substr(1);
+                scope.$on('$stateChangeSuccess', function() {
+                    events = events = {
+                        '25': false,
+                        '50': false,
+                        '75': false,
+                        '100': false
+                    };
+                    title = $location.$$path.substr(1);
+                });
+
                 scope.$on('scroll', function(event, data){
                     scope.perc = data.y / data.scrollHeight * 100;
-                    if (scope.perc >= 25 && scope.perc < 50 && !events['25']) {
-                        events['25'] = true;
-                        $analytics.eventTrack('storyScroll', {  label: 'label', value: 25 });
-                    }
-                    if (scope.perc >= 50 && scope.perc < 75 && !events['50']) {
-                        events['50'] = true;
-                        $analytics.eventTrack('storyScroll', {  label: 'label', value: 50 });
-                    }
-                    if (scope.perc >= 75 && scope.perc < 100 && !events['75']) {
-                        events['75'] = true;
-                        $analytics.eventTrack('storyScroll', {  label: 'label', value: 75 });
-                    }
-                    if (scope.perc == 100 && !events['100']) {
-                        events['10'] = true;
-                        $analytics.eventTrack('storyScroll', {  label: 'label', value: 100 });
+                    if (data.directionY == 'down') {   
+                        if (scope.perc >= 25 && !events['25']) {
+                            events['25'] = true;
+                            // console.log('25', data.directionY);
+                            $analytics.eventTrack('scroll-25', { category: 'storyScroll', label: title, value: 25 });
+                        }
+                        if (scope.perc >= 50 && events['25'] && !events['50']) {
+                            events['50'] = true;
+                            // console.log('50', data.directionY);
+                            $analytics.eventTrack('scroll-50', { category: 'storyScroll', label: title, value: 50 });
+                        }
+                        if (scope.perc >= 75 && events['25'] && events['50'] && !events['75']) {
+                            events['75'] = true;
+                            // console.log('75', data.directionY);
+                            $analytics.eventTrack('scroll-75', { category: 'storyScroll', label: title, value: 75 });
+                        }
+                        if (scope.perc == 100 && events['25'] && events['50'] && events['75'] && !events['100']) {
+                            events['100'] = true;
+                            // console.log('100', data.directionY);
+                            $analytics.eventTrack('scroll-100', { category: 'storyScroll', label: title, value: 100 });
+                        }
                     }
                 });
             }
