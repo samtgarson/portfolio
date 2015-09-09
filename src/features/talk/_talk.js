@@ -10,15 +10,15 @@ angular.module('talk', [])
             };
         });
 
-        var len = $scope.quotes.length, stop = false;
-        $scope.index = -1;
-        function advance() {
-            $scope.index = ($scope.index + 1) % len;
-            if (!stop) $timeout(advance, 11000);
-        }
-        advance();
+        // var len = $scope.quotes.length, stop = false;
+        // $scope.index = -1;
+        // function advance() {
+        //     $scope.index = ($scope.index + 1) % len;
+        //     if (!stop) $timeout(advance, 11000);
+        // }
+        // advance();
 
-        $scope.$on('$destroy', function() {
-            stop = true;
-        });
+        // $scope.$on('$destroy', function() {
+        //     stop = true;
+        // });
     });

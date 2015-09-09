@@ -7,6 +7,11 @@ angular.module('filters', [])
             });
         };
     })
+    .filter('paras', function() {
+        return function(s) {
+            return s.split('\n').filter(function(b) {return b.length;}).join('<br \><br \>');
+        };
+    })
     .directive('rando', function($timeout) {
         return {
             restrict: 'C',

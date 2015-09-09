@@ -374,3 +374,46 @@ ui-view.main {
         }
     }
 }
+.testimonials {
+    li {
+        margin-bottom: 100px;
+        position: relative;
+        counter-increment: step-counter;
+        transition: transform .5s ease, opacity .5s ease;
+
+        h3 {
+            padding-right: 10%;
+            font-weight: normal;
+        }
+        h3, h6 {
+            transition: transform .5s ease, opacity .5s ease;
+        }
+        a.read-more {
+            position: absolute;
+            top: 50%;
+            width: 75%;
+            left: 100%;
+            transform: translateY(-50%);
+            transition: transform .5s ease;
+        }
+        &::before {
+            content: counter(step-counter);
+            position: absolute;
+            font-size: 2.3em;
+            top: 12px;
+            left: -250px;
+            font-weight: normal;
+            transition: transform .5s ease, opacity .5s ease;
+        }
+
+        &:hover {
+            transform: translateX(-10%);
+            .testimonial, .source, &::before {
+                opacity: .1;
+            }
+            .read-more {
+                transform: translateY(-50%) translateX(-100%);
+            }
+        }
+    }
+}

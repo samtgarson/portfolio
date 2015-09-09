@@ -16,17 +16,8 @@ section
         a target="_blank" href="mailto:hey@samgarson.com" get in touch &rarr;
 
     p 
-        | Yours, 
+        | Cheers, 
         b Sam Garson
-
-    p
-        a.back ui-sref="parent.home" &larr; Back
-
-    ul.quotes
-        li.see See the Case Study &rarr;
-        li.no-link ng-repeat="quote in quotes" ng-class="{'show': index == $index}" ui-sref="parent.story({slug: quote.slug})"
-            h3.testimonial {{quote.words}}
-            h6.source {{quote.source}}
 
 
     / hr 

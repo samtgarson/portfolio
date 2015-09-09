@@ -60,6 +60,11 @@ angular.module('states', [])
                 'templateUrl': templater('stories'), 
                 'controller': 'storiesController'
             })
+            .state('parent.testimonials', {
+                'url'               : 'testimonials',
+                'templateUrl': templater('testimonials'), 
+                'controller': 'testimonialsController'
+            })
             .state('parent.about', {
                 'url'               : 'about',
                 'templateUrl': templater('talk'), 

@@ -1,0 +1,8 @@
+ul.quotes
+    li.no-link ng-repeat="quote in quotes" ng-class="{'show': index == $index}" ui-sref="parent.story({slug: quote.slug})"
+        .box
+            h3.testimonial ng-bind-html="quote.words | paras"
+            h6.source {{quote.source}}
+        a.read-more 
+            h6 {{quote.project}}
+            h2 Read the case study &rarr;

@@ -2309,6 +2309,45 @@ ui-view.main {
     width: 100%;
     padding-top: 60px; } }
 
+.testimonials li {
+  margin-bottom: 100px;
+  position: relative;
+  counter-increment: step-counter;
+  transition: -webkit-transform 0.5s ease, opacity 0.5s ease;
+  transition: transform 0.5s ease, opacity 0.5s ease; }
+  .testimonials li h3 {
+    padding-right: 10%;
+    font-weight: normal; }
+  .testimonials li h3, .testimonials li h6 {
+    transition: -webkit-transform 0.5s ease, opacity 0.5s ease;
+    transition: transform 0.5s ease, opacity 0.5s ease; }
+  .testimonials li a.read-more {
+    position: absolute;
+    top: 50%;
+    width: 75%;
+    left: 100%;
+    -webkit-transform: translateY(-50%);
+    transform: translateY(-50%);
+    transition: -webkit-transform 0.5s ease;
+    transition: transform 0.5s ease; }
+  .testimonials li::before {
+    content: counter(step-counter);
+    position: absolute;
+    font-size: 2.3em;
+    top: 12px;
+    left: -250px;
+    font-weight: normal;
+    transition: -webkit-transform 0.5s ease, opacity 0.5s ease;
+    transition: transform 0.5s ease, opacity 0.5s ease; }
+  .testimonials li:hover {
+    -webkit-transform: translateX(-10%);
+    transform: translateX(-10%); }
+    .testimonials li:hover .testimonial, .testimonials li:hover .source, .testimonials li:hover::before {
+      opacity: 0.1; }
+    .testimonials li:hover .read-more {
+      -webkit-transform: translateY(-50%) translateX(-100%);
+      transform: translateY(-50%) translateX(-100%); }
+
 ol.stories-list {
   list-style-type: none;
   width: 450px;

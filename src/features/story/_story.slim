@@ -7,7 +7,7 @@ p.standfirst {{story.fragments['story.standfirst'].value[0].text}}
 
 prismic-html.content fragment="story.fragments['story.content']"
 
-h3.testimonial ng-if="story.fragments['story.quote']" {{story.fragments['story.quote'].value}}
+h3.testimonial ng-if="story.fragments['story.quote']" ng-bind-html="story.fragments['story.quote'].value | paras"
 h6.source ng-if="story.fragments['story.quote-source']" {{story.fragments['story.quote-source'].value}}
 
 .next.no-link ng-if="nextStory" ui-sref="parent.story({slug: nextStory.slug})"

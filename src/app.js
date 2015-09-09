@@ -21,7 +21,8 @@ angular.module('app', [
     'home',
     'talk',
     'stories',
-    'story'
+    'story',
+    'testimonials'
     
     // Patterns
 ])
@@ -76,7 +77,8 @@ angular.module('app', [
             var states = {
                 'parent.story': 'parent.stories',
                 'parent.stories': 'parent.home',
-                'parent.about': 'parent.home'
+                'parent.about': 'parent.home',
+                'parent.testimonials': 'parent.home'
             };
             $state.go(states[$state.current.name]);
         };
