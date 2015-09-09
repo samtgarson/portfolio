@@ -157,7 +157,8 @@ h2.name {
     top: 100px;
     left: 50px;
     box-sizing: border-box;
-    overflow-y: scroll;
+    overflow-y: auto;
+    height: calc(100vh - 100px);
 
     @include small {
         width: 100%;
