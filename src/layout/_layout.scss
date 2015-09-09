@@ -42,6 +42,9 @@ body {
         transform: scale(1.2) rotate(3deg) translateY(-12vh);      
         }
     }
+    &.testimonials::before {
+        transform: scale(1.2) rotate(-3deg) translateY(50vw);   
+    }
 
 
     &:not(.home) {
@@ -381,6 +384,7 @@ ui-view.main {
         position: relative;
         counter-increment: step-counter;
         transition: transform .5s ease, opacity .5s ease;
+        list-style-type: none;
 
         h3 {
             padding-right: 10%;

@@ -27,21 +27,23 @@ a {
 }
 
 .clickable, [ui-sref], [ng-click], [href] {
-    cursor: pointer;
-    display: inline-block;
-    &:not(.no-link)::after {
-      height: 2px;
-      background-color: $b;
-      display: block;
-      content: ' ';
-      width: 0;
-      transition: width .4s;
-      margin: -5px 0 0;      
-    }
+  cursor: pointer;
+  &:not(.no-link) {
+      display: inline-block;
+      &::after {
+        height: 2px;
+        background-color: $b;
+        display: block;
+        content: ' ';
+        width: 0;
+        transition: width .4s;
+        margin: -5px 0 0;      
+      }
 
-    &:active::after, &:hover::after {
-      // text-decoration: underline;
-      width: 100%;
+      &:active::after, &:hover::after {
+        // text-decoration: underline;
+        width: 100%;
+      }
     }
 }
 

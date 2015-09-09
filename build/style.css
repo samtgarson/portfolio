@@ -1248,6 +1248,9 @@ body {
   body.story::before {
     -webkit-transform: scale(1.2) rotate(3deg) translateY(-12vh);
     transform: scale(1.2) rotate(3deg) translateY(-12vh); }
+  body.testimonials::before {
+    -webkit-transform: scale(1.2) rotate(-3deg) translateY(50vw);
+    transform: scale(1.2) rotate(-3deg) translateY(50vw); }
   body:not(.home) h1.name span {
     opacity: 0;
     -webkit-transform: none !important;
@@ -2315,7 +2318,8 @@ ui-view.main {
   position: relative;
   counter-increment: step-counter;
   transition: -webkit-transform 0.5s ease, opacity 0.5s ease;
-  transition: transform 0.5s ease, opacity 0.5s ease; }
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  list-style-type: none; }
   .testimonials li h3 {
     padding-right: 10%;
     font-weight: normal; }
@@ -2905,18 +2909,19 @@ input, textarea, button, select, a {
   text-decoration: none; }
 
 .clickable, [ui-sref], [ng-click], [href] {
-  cursor: pointer;
-  display: inline-block; }
-  .clickable:not(.no-link)::after, [ui-sref]:not(.no-link)::after, [ng-click]:not(.no-link)::after, [href]:not(.no-link)::after {
-    height: 2px;
-    background-color: #4B4B4B;
-    display: block;
-    content: ' ';
-    width: 0;
-    transition: width 0.4s;
-    margin: -5px 0 0; }
-  .clickable:active::after, .clickable:hover::after, [ui-sref]:active::after, [ui-sref]:hover::after, [ng-click]:active::after, [ng-click]:hover::after, [href]:active::after, [href]:hover::after {
-    width: 100%; }
+  cursor: pointer; }
+  .clickable:not(.no-link), [ui-sref]:not(.no-link), [ng-click]:not(.no-link), [href]:not(.no-link) {
+    display: inline-block; }
+    .clickable:not(.no-link)::after, [ui-sref]:not(.no-link)::after, [ng-click]:not(.no-link)::after, [href]:not(.no-link)::after {
+      height: 2px;
+      background-color: #4B4B4B;
+      display: block;
+      content: ' ';
+      width: 0;
+      transition: width 0.4s;
+      margin: -5px 0 0; }
+    .clickable:not(.no-link):active::after, .clickable:not(.no-link):hover::after, [ui-sref]:not(.no-link):active::after, [ui-sref]:not(.no-link):hover::after, [ng-click]:not(.no-link):active::after, [ng-click]:not(.no-link):hover::after, [href]:not(.no-link):active::after, [href]:not(.no-link):hover::after {
+      width: 100%; }
 
 .right {
   float: right; }

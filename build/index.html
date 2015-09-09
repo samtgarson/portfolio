@@ -28,10 +28,10 @@
     </h2>
     <nav ng-if="page">
       <h3 class="scrollable" ng-click="scrollToTop()" ng-if="page==&#39;story&#39;"></h3>
-      <h2 class="mini">
+      <h2 class="mini no-link" ui-sref="parent.home">
         <span>S</span><span>a</span><span>m</span>
       </h2>
-      <h2 class="mini">
+      <h2 class="mini no-link" ui-sref="parent.home">
         <span>G</span><span>a</span><span>r</span><span>s</span><span>o</span><span>n</span>
       </h2>
       <a href="mailto:hey@samgarson.com">Get in touch &rarr;</a><br /><a ng-click="goBack()">&larr; Back</a>
