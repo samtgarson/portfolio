@@ -27873,10 +27873,10 @@ angular.module("states", []).run(function($rootScope, $state) {}).config(functio
     });
 });
 angular.module("<%= name%>", []).controller("<%= name%>Controller", function($scope) {});
+angular.module("home", []).controller("homeController", function($scope) {});
 angular.module("stories", []).controller("storiesController", function($scope, Stories) {
     $scope.stories = Stories.results;
 });
-angular.module("home", []).controller("homeController", function($scope) {});
 angular.module("story", []).controller("storyController", function($scope, Stories, $stateParams) {
     $scope.story = Stories.results.filter(function(s, i) {
         if (s.slugs.indexOf($stateParams.slug) > -1) {

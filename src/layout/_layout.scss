@@ -393,9 +393,10 @@ ui-view.main {
             position: absolute;
             top: 50%;
             width: 75%;
-            left: 100%;
+            left: 20%;
             transform: translateY(-50%);
-            transition: transform .5s ease;
+            transition: transform .5s, opacity .5s;
+            opacity: 0;
         }
         &::before {
             content: counter(step-counter);
@@ -413,7 +414,8 @@ ui-view.main {
                 opacity: .1;
             }
             .read-more {
-                transform: translateY(-50%) translateX(-100%);
+                transform: translateY(-50%) translateX(40px);
+                opacity: 1;
             }
         }
     }

@@ -2326,11 +2326,12 @@ ui-view.main {
     position: absolute;
     top: 50%;
     width: 75%;
-    left: 100%;
+    left: 20%;
     -webkit-transform: translateY(-50%);
     transform: translateY(-50%);
-    transition: -webkit-transform 0.5s ease;
-    transition: transform 0.5s ease; }
+    transition: -webkit-transform 0.5s, opacity 0.5s;
+    transition: transform 0.5s, opacity 0.5s;
+    opacity: 0; }
   .testimonials li::before {
     content: counter(step-counter);
     position: absolute;
@@ -2346,8 +2347,9 @@ ui-view.main {
     .testimonials li:hover .testimonial, .testimonials li:hover .source, .testimonials li:hover::before {
       opacity: 0.1; }
     .testimonials li:hover .read-more {
-      -webkit-transform: translateY(-50%) translateX(-100%);
-      transform: translateY(-50%) translateX(-100%); }
+      -webkit-transform: translateY(-50%) translateX(40px);
+      transform: translateY(-50%) translateX(40px);
+      opacity: 1; }
 
 ol.stories-list {
   list-style-type: none;
