@@ -1,6 +1,9 @@
 ol.stories-list {
     list-style-type: none;
     width: 450px;
+    margin-left: auto;
+    margin-right: 20vw;
+    // margin-top: 200px;
     box-sizing: border-box;
 
     & > li {

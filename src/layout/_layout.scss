@@ -46,7 +46,9 @@ body {
         transform: scale(1.2) rotate(-3deg) translateY(50vw);   
     }
 
-
+    nav {
+        pointer-events: none;
+    }
     &:not(.home) {
         h1.name {
             span {
@@ -54,6 +56,9 @@ body {
                 transform: none !important;
                 pointer-events: none;
             }
+        }
+        nav {
+            pointer-events: auto;
         }
         .mini span, nav a {
             opacity: 1;
@@ -108,7 +113,7 @@ h1.name {
     letter-spacing: 3vw;
     
     width: calc(100vw - 450px);
-    position: fixed;
+    position: absolute;
     left: 450px;
     top: 9vw;
     height: 1em;
@@ -122,11 +127,7 @@ h1.name {
     &:last-of-type {
         top: 50vh;
     }
-    @include medium {
-        // width: 55vw;
-        // right: 1vw;
-        // letter-spacing: 60px;
-    }
+
     @include small {
         display: none;
     }
@@ -156,24 +157,15 @@ h2.name {
 .home section {
     width: 300px;
     padding-bottom: 100px;
-    position: fixed;
-    top: 100px;
-    left: 50px;
+    // position: fixed;
+    margin-top: 100px;
+    margin-left: 50px;
     box-sizing: border-box;
-    overflow-y: auto;
-    height: calc(100vh - 100px);
 
     @include small {
         width: 100%;
-        padding-top: 40px;
-        left: 0;
-        right: 0;
-        margin: 0 auto;
-        position: static;
-        br:nth-of-type(odd) {
-            display: none;
-            // line-height: 5px;
-        }
+        margin: 80px 0 0px;
+        padding: 0 40px 0 40px;
     }
 
     ul {
@@ -183,11 +175,11 @@ h2.name {
         }
     }
 
-    a {
+    a.bold {
         font-weight: bold;
     }
 }
-ui-view.main {
+.story ui-view.main {
     margin-left: 40vw;
     position: relative;
     margin-top: 30vh;

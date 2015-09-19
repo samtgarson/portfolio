@@ -27,12 +27,14 @@ angular.module('app', [
     // Patterns
 ])
 
-    .config(function(PrismicProvider, $logProvider) {
+    .config(function(PrismicProvider, $logProvider, $analyticsProvider) {
         PrismicProvider.setApiEndpoint('https://samgarson.prismic.io/api');
         PrismicProvider.setLinkResolver(function(ctx, doc) {
             return 'stories/' + doc.id;
         });
         $logProvider.debugEnabled(true);
+        console.log(window.location.hostname!="www.samgarson.com");
+        $analyticsProvider.developerMode(window.location.hostname!="www.samgarson.com");
     })
 
     .controller('appController', function ($scope, $filter, $timeout, $state, $urlRouter) {
@@ -75,7 +77,7 @@ angular.module('app', [
 
         $scope.goBack = function() {
             var states = {
-                'parent.story': 'parent.stories',
+                'parent.story': 'parent.home',
                 'parent.stories': 'parent.home',
                 'parent.about': 'parent.home',
                 'parent.testimonials': 'parent.home'
