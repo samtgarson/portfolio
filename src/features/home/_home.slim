@@ -20,9 +20,12 @@ section
     a target="_blank" href="mailto:hey@samgarson.com" hey@samgarson.com &rarr;
     br
     br
-    a.bold ng-click="to_stories()" Selected case studies &darr;
+    a.bold ng-click="to_stories()" 
+        | Selected case studies 
+        span.spinner ng-style="{transform: 'rotate(' + spinner +'deg)'}" &rarr;
 
 ol.stories-list
+    h6.list-title selected case studies
     li ng-repeat="story in stories" 
         a.no-link ui-sref="parent.story({slug: story.slug})"
             h1.title {{story.fragments['story.title'].value[0].text}}

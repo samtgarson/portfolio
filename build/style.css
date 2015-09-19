@@ -1210,7 +1210,7 @@ h1, h2, h3, h4, h5, h6 {
 body {
   font: normal normal 20px/180% Circular, PostGrotesk, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased; }
-  @media only screen and (max-width: 650px) {
+  @media only screen and (max-width: 800px) {
     body {
       font-size: 15px; } }
   body *::-moz-selection {
@@ -1491,7 +1491,7 @@ nav {
       transition-delay: calc(.05s * 100); }
   nav h3.scrollable {
     font-weight: normal; }
-  @media only screen and (max-width: 650px) {
+  @media only screen and (max-width: 800px) {
     nav {
       display: none; } }
 
@@ -1501,21 +1501,27 @@ h1.name {
   transition-timing-function: cubic-bezier(0, 1.085, 0.795, 1);
   font-size: 10vw;
   font-weight: normal;
-  letter-spacing: 3vw;
-  width: calc(100vw - 450px);
+  letter-spacing: 4vw;
+  width: calc(100vw - 520px);
   position: absolute;
-  left: 450px;
-  top: 9vw;
+  left: 520px;
+  top: 4vw;
   height: 1em;
   box-sizing: border-box;
   pointer-events: auto; }
   h1.name:first-of-type {
-    left: 650px; }
+    left: 720px; }
   h1.name:last-of-type {
-    top: 50vh; }
-  @media only screen and (max-width: 650px) {
+    top: 40vh; }
+  @media only screen and (max-width: 800px) {
     h1.name {
       display: none; } }
+  @media only screen and (min-width: 800px) and (max-width: 1150px) {
+    h1.name {
+      left: 350px;
+      top: 10vw; }
+      h1.name:first-of-type {
+        left: 500px; } }
   h1.name span {
     transition-property: all;
     transition-duration: 0.4s;
@@ -1723,7 +1729,7 @@ h1.name {
 
 h2.name {
   display: none; }
-  @media only screen and (max-width: 650px) {
+  @media only screen and (max-width: 800px) {
     h2.name {
       display: block;
       z-index: 10;
@@ -1943,20 +1949,42 @@ h2.name {
 .home section {
   width: 300px;
   padding-bottom: 100px;
-  margin-top: 100px;
-  margin-left: 50px;
+  position: fixed;
+  top: 100px;
+  left: 50px;
   box-sizing: border-box; }
-  @media only screen and (max-width: 650px) {
+  @media only screen and (max-width: 800px) {
     .home section {
       width: 100%;
       margin: 80px 0 0px;
-      padding: 0 40px 0 40px; } }
+      padding: 0 40px 0 40px;
+      position: static; } }
   .home section ul {
     padding: 0; }
     .home section ul li {
       list-style-type: none; }
   .home section a.bold {
     font-weight: bold; }
+  .home section .spinner {
+    -webkit-transform: rotate(90deg);
+    transform: rotate(90deg);
+    display: inline-block; }
+    @media only screen and (max-width: 800px) {
+      .home section .spinner {
+        -webkit-transform: rotate(90deg) !important;
+        transform: rotate(90deg) !important; } }
+
+ui-view.main ui-view > * {
+  -webkit-transform: translateY(20px);
+  transform: translateY(20px);
+  transition: -webkit-transform 0.6s, opacity 0.6s !important;
+  transition: transform 0.6s, opacity 0.6s !important;
+  transition-timing-function: cubic-bezier(0, 1.085, 0.795, 1);
+  opacity: 0; }
+ui-view.main.show ui-view > * {
+  -webkit-transform: translateY(0px);
+  transform: translateY(0px);
+  opacity: 1; }
 
 .story ui-view.main {
   margin-left: 40vw;
@@ -1977,13 +2005,13 @@ h2.name {
   .story ui-view.main.show {
     opacity: 1;
     padding-top: 0; }
-    @media only screen and (max-width: 650px) {
+    @media only screen and (max-width: 800px) {
       .story ui-view.main.show {
         padding-top: 55px; } }
     .story ui-view.main.show ui-view > * {
       -webkit-transform: translateY(0px);
       transform: translateY(0px); }
-  @media only screen and (max-width: 650px) {
+  @media only screen and (max-width: 800px) {
     .story ui-view.main {
       margin: 0;
       padding: 32px;
@@ -2005,7 +2033,7 @@ h2.name {
   font-weight: normal;
   margin-bottom: 340px;
   margin-right: 100px; }
-  @media only screen and (min-width: 650px) and (max-width: 1150px) {
+  @media only screen and (min-width: 800px) and (max-width: 1150px) {
     .about h1.heart {
       font-size: 1.8em;
       line-height: 2.2em;
@@ -2221,6 +2249,7 @@ h2.name {
   overflow-y: visible;
   margin-right: 100px;
   margin-left: auto;
+  margin-top: 250px;
   min-width: 400px;
   max-width: 750px;
   position: relative; }
@@ -2244,7 +2273,7 @@ h2.name {
 .about .back {
   font-weight: normal;
   display: none; }
-  @media only screen and (max-width: 650px) {
+  @media only screen and (max-width: 800px) {
     .about .back {
       display: inline-block; } }
 .about .quotes {
@@ -2282,7 +2311,7 @@ h2.name {
     opacity: 1;
     -webkit-transform: translatey(0px);
     transform: translatey(0px); }
-  @media only screen and (max-width: 650px) {
+  @media only screen and (max-width: 800px) {
     .about .quotes {
       height: 23em;
       text-align: left;
@@ -2298,7 +2327,7 @@ h2.name {
     opacity: 1; }
 .about hr {
   border: 1px solid #4B4B4B; }
-@media only screen and (max-width: 650px) {
+@media only screen and (max-width: 800px) {
   .about img.face {
     opacity: 0.4; }
   .about h1.heart {
@@ -2358,12 +2387,19 @@ ol.stories-list {
   width: 450px;
   margin-left: auto;
   margin-right: 20vw;
+  margin-top: calc(100vh - 80px);
   box-sizing: border-box; }
+  ol.stories-list .list-title {
+    margin-bottom: 150px;
+    border-bottom: 2px solid black; }
+    @media only screen and (max-width: 800px) {
+      ol.stories-list .list-title {
+        margin-bottom: 60px; } }
   ol.stories-list > li {
     counter-increment: step-counter;
     box-sizing: border-box;
     position: relative;
-    margin-bottom: 160px; }
+    margin-bottom: 200px; }
     ol.stories-list > li:hover h1::after {
       margin-left: 30px !important; }
     ol.stories-list > li:hover img {
@@ -2395,10 +2431,15 @@ ol.stories-list {
       top: 12px;
       left: -250px;
       font-weight: normal; }
-  @media only screen and (max-width: 650px) {
+  @media only screen and (min-width: 800px) and (max-width: 1150px) {
+    ol.stories-list {
+      margin-right: 5vw; } }
+  @media only screen and (max-width: 800px) {
     ol.stories-list {
       padding-top: 40px;
-      width: auto; }
+      width: auto;
+      margin-top: 50px;
+      margin-right: 0; }
       ol.stories-list li {
         max-width: 100%;
         margin-bottom: 100px; }
@@ -2419,7 +2460,9 @@ h3.testimonial {
   font-size: 1.5em;
   line-height: 1.6em;
   padding-right: 30%;
-  position: relative; }
+  position: relative;
+  border-top: 2px solid black;
+  padding-top: 60px; }
   h3.testimonial::before {
     content: "\201C";
     left: -20px;
@@ -2432,7 +2475,7 @@ h3.testimonial {
     position: absolute;
     margin-top: 0px;
     display: inline-block; }
-  @media only screen and (max-width: 650px) {
+  @media only screen and (max-width: 800px) {
     h3.testimonial {
       padding: 0; }
       h3.testimonial::before {
@@ -2449,7 +2492,7 @@ h3.testimonial {
   transform: rotate(2deg);
   z-index: -2;
   height: 70vh; }
-  @media only screen and (max-width: 650px) {
+  @media only screen and (max-width: 800px) {
     .story ui-view.main::before {
       top: -43vh; } }
 .story ui-view.main::after {
@@ -2694,8 +2737,9 @@ h3.testimonial {
   max-width: 750px; }
 .story .tags {
   padding: 0;
-  padding-top: 175px; }
-  @media only screen and (max-width: 650px) {
+  padding-top: 175px;
+  border-bottom: 2px solid black; }
+  @media only screen and (max-width: 800px) {
     .story .tags {
       text-align: center; } }
   .story .tags h6 {
@@ -2706,7 +2750,7 @@ h3.testimonial {
       font-weight: bold; }
       .story .tags h6:first-child::after {
         content: '|'; }
-      @media only screen and (max-width: 650px) {
+      @media only screen and (max-width: 800px) {
         .story .tags h6:first-child {
           display: block; }
           .story .tags h6:first-child::after {
@@ -2720,7 +2764,7 @@ h3.testimonial {
   max-width: 750px;
   text-justify: left;
   font-weight: normal;
-  padding-bottom: 60px; }
+  padding-bottom: 0px; }
   .story .content img {
     max-width: 650px;
     max-height: 70vh; }
@@ -2764,7 +2808,7 @@ h3.testimonial {
     margin: 100px 0;
     overflow-x: visible;
     position: relative; }
-    @media only screen and (max-width: 650px) {
+    @media only screen and (max-width: 800px) {
       .story .content .gallery-wrapper {
         margin: 40px 0; } }
     .story .content .gallery-wrapper .gallery {
@@ -2846,7 +2890,7 @@ h3.testimonial {
     height: 310px;
     z-index: -1;
     opacity: 0.3; }
-    @media only screen and (max-width: 650px) {
+    @media only screen and (max-width: 800px) {
       .story .next img {
         height: 30vh;
         top: -2vh;
@@ -2859,7 +2903,7 @@ h3.testimonial {
   .story .next:hover img {
     -webkit-transform: scale(1.05) !important;
     transform: scale(1.05) !important; }
-@media only screen and (max-width: 650px) {
+@media only screen and (max-width: 800px) {
   .story h1.title {
     top: 4vh;
     width: 100%;

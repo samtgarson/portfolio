@@ -3,14 +3,22 @@ ol.stories-list {
     width: 450px;
     margin-left: auto;
     margin-right: 20vw;
-    // margin-top: 200px;
+    margin-top: calc(100vh - 80px);
     box-sizing: border-box;
+
+    .list-title {
+        margin-bottom: 150px;
+        border-bottom: 2px solid black;
+        @include small {
+            margin-bottom: 60px;
+        }
+    }
 
     & > li {
         counter-increment: step-counter;
         box-sizing: border-box;
         position: relative;
-        margin-bottom: 160px;
+        margin-bottom: 200px;
 
         &:hover {
             h1::after {
@@ -53,9 +61,14 @@ ol.stories-list {
             font-weight: normal;
         }
     }
+    @include medium {
+        margin-right: 5vw;
+    }
     @include small {
         padding-top: 40px;
         width: auto;
+        margin-top: 50px;
+        margin-right: 0;
 
         li {
             max-width: 100%;
@@ -88,6 +101,8 @@ h3.testimonial {
     line-height: 1.6em;
     padding-right: 30%;
     position: relative;
+    border-top: 2px solid black;
+    padding-top: 60px;
 
     &::before {
         content: "\201C";
@@ -183,6 +198,7 @@ h3.testimonial {
     .tags {
         padding: 0;
         padding-top: 175px;
+        border-bottom: 2px solid black;
         @include small {
             text-align: center;
         }
@@ -216,7 +232,7 @@ h3.testimonial {
         max-width: 750px;
         text-justify: left;
         font-weight: normal;
-        padding-bottom: 60px;
+        padding-bottom: 0px;
 
         img {
             max-width: 650px;

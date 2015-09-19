@@ -1,8 +1,8 @@
 @mixin small {
-    @media only screen and (max-width: 650px) { @content; }
+    @media only screen and (max-width: 800px) { @content; }
 }
 @mixin medium {
-    @media only screen and (min-width: 650px) and (max-width: 1150px) { @content; }
+    @media only screen and (min-width: 800px) and (max-width: 1150px) { @content; }
 }
 @mixin large {
     @media only screen and (min-width: 1150px) { @content; }
