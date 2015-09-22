@@ -27475,7 +27475,7 @@ angular.module("templates", []).run([ "$templateCache", function($templateCache)
     $templateCache.put("features/story/_story.html", '<h1 class="title rando" multiplier=".2" ng-bind="story.fragments[&#39;story.title&#39;].value[0].text"></h1>\n<img class="cover" ng-src="{{story.fragments[&#39;story.cover&#39;].value.main.url}}" />\n<ul class="tags">\n  <h6>\n    {{story.fragments[\'story.date\'].value | amDateFormat : \'MMMM YYYY\' }}\n  </h6>\n  <h6 ng-repeat="tag in story.tags">\n    {{tag}}\n  </h6>\n</ul>\n<p class="standfirst">\n  {{story.fragments[\'story.standfirst\'].value[0].text}}\n</p>\n<prismic-html class="content" fragment="story.fragments[&#39;story.content&#39;]"></prismic-html>\n<h3 class="testimonial" ng-bind-html="story.fragments[&#39;story.quote&#39;].value | paras" ng-if="story.fragments[&#39;story.quote&#39;]"></h3>\n<h6 class="source" ng-if="story.fragments[&#39;story.quote-source&#39;]">\n  {{story.fragments[\'story.quote-source\'].value}}\n</h6>\n<div class="next no-link" ng-if="nextStory" ui-sref="parent.story({slug: nextStory.slug})">\n  <h6>\n    next story\n  </h6>\n  <h1>\n    {{nextStory.fragments[\'story.title\'].value[0].text}}\n  </h1>\n  <img ng-src="{{nextStory.fragments[&#39;story.cover&#39;].value.main.url}}" />\n</div>\n');
     $templateCache.put("features/stories/_stories.html", '<ol class="stories-list">\n  <li class="no-link" ng-repeat="story in stories" ui-sref="parent.story({slug: story.slug})">\n    <h1 class="title">\n      {{story.fragments[\'story.title\'].value[0].text}}\n    </h1>\n    <img class="cover" ng-src="{{story.fragments[&#39;story.cover&#39;].value.main.url}}" />\n    <h6>\n      {{story.fragments[\'story.date\'].value | amDateFormat : \'MMMM YYYY\' }}\n    </h6>\n  </li>\n</ol>\n');
     $templateCache.put("features/talk/_talk.html", '<img class="face" src="img/face.png" />\n<section>\n  <h1 class="heart rando" multiplier=".3">\n    Sam &#10084; product\n  </h1>\n  <b>I\'m a holistic designer, problem solver and full stack web developer living in London, specialising in rapid product innovation.</b>\n  <p>\n    I\'m currently helping a few small startups and big brands build products, solve problems and engage their audiences.\n  </p>\n  <p>\n    I\'m available to hire, full-time or freelance—always looking to work with passionate people shipping awesome product. \n  </p>\n  <p>\n    Take a look at some of my <a ui-sref="parent.stories">work &rarr;</a>\n  </p>\n  <p>\n    Or <a href="mailto:hey@samgarson.com" target="_blank">get in touch &rarr;</a>\n  </p>\n  <p>\n    Cheers, <b>Sam</b>\n  </p>\n  <p class="social">\n    My professional profile<br /><a href="http://linkedin.com/in/samtgarson" target="_blank">LinkedIn </a>\n  </p>\n  <p class="social">\n    My occasional thought<br /><a href="http://twitter.com/samtgarson" target="_blank">Twitter</a>\n  </p>\n  <p class="social">\n    My pretentious photos<br /><a href="http://instagram.com/samtgarson" target="_blank">Instagram</a>\n  </p>\n  <p class="social">\n    My resumé<br /><a href="cv.pdf" target="_blank">Download</a>\n  </p>\n</section>\n');
-    $templateCache.put("features/testimonials/_testimonials.html", '<ul class="quotes">\n  <li class="no-link" ng-class="{&#39;show&#39;: index == $index}" ng-repeat="quote in quotes" ui-sref="parent.story({slug: quote.slug})">\n    <div class="box">\n      <h3 class="testimonial" ng-bind-html="quote.words | paras"></h3>\n      <h6 class="source">\n        {{quote.source}}\n      </h6>\n    </div>\n    <a class="read-more">\n      <h6>\n        {{quote.project}}\n      </h6>\n      <h2>\n        Read the case study &rarr;\n      </h2>\n    </a>\n  </li>\n</ul>\n');
+    $templateCache.put("features/testimonials/_testimonials.html", '<ul class="quotes">\n  <li class="no-link" ng-class="{&#39;show&#39;: index == $index, &#39;no-read&#39;: !quote.read}" ng-repeat="quote in quotes" ui-sref="parent.story({slug: quote.slug})">\n    <div class="box">\n      <h3 class="testimonial" ng-bind-html="quote.words | paras"></h3>\n      <h6 class="source">\n        {{quote.source}}\n      </h6>\n    </div>\n    <a class="read-more">\n      <h6>\n        {{quote.project}}\n      </h6>\n      <h2>\n        Read the case study &rarr;\n      </h2>\n    </a>\n  </li>\n</ul>\n');
 } ]);
 angular.module("filters", []).filter("titlecase", function() {
     return function(s) {
@@ -27872,8 +27872,14 @@ angular.module("states", []).run(function($rootScope, $state) {}).config(functio
         controller: "storyController"
     });
 });
-angular.module("home", []).controller("homeController", function($scope, Stories, scroll) {
+angular.module("<%= name%>", []).controller("<%= name%>Controller", function($scope) {});
+angular.module("stories", []).controller("storiesController", function($scope, Stories) {
     $scope.stories = Stories.results;
+});
+angular.module("home", []).controller("homeController", function($scope, Stories, scroll) {
+    $scope.stories = Stories.results.filter(function(s) {
+        return !s.fragments["story.hidden"] || s.fragments["story.hidden"].value != "true";
+    });
     $scope.to_stories = function() {
         var st = $("ol.stories-list").offset().top - 150;
         $("html, body").animate({
@@ -27883,10 +27889,9 @@ angular.module("home", []).controller("homeController", function($scope, Stories
     scroll.bind();
     $scope.$on("scroll", function(event, data) {
         var perc = ($("ol.stories-list").offset().top - $(window).scrollTop()) / $(window).height();
-        $scope.spinner = 180 * Math.min(Math.max(perc, 0), 1) - 90;
+        $scope.spinner = 215 * Math.min(Math.max(perc, 0), 1) - 90;
     });
 });
-angular.module("<%= name%>", []).controller("<%= name%>Controller", function($scope) {});
 angular.module("story", []).controller("storyController", function($scope, Stories, $stateParams) {
     $scope.story = Stories.results.filter(function(s, i) {
         if (s.slugs.indexOf($stateParams.slug) > -1) {
@@ -27895,9 +27900,6 @@ angular.module("story", []).controller("storyController", function($scope, Stori
         } else return false;
     })[0];
     $scope.$emit("title", $scope.story.fragments["story.title"].value[0].text);
-});
-angular.module("stories", []).controller("storiesController", function($scope, Stories) {
-    $scope.stories = Stories.results;
 });
 angular.module("talk", []).controller("talkController", function($scope, Stories, $timeout) {
     $scope.quotes = Stories.results.filter(function(n) {
@@ -27918,7 +27920,8 @@ angular.module("testimonials", []).controller("testimonialsController", function
             words: n.fragments["story.quote"].value,
             source: n.fragments["story.quote-source"].value,
             project: n.fragments["story.title"].value[0].text,
-            id: n.id
+            id: n.id,
+            read: !n.fragments["story.hidden"] || n.fragments["story.hidden"].value != "true"
         };
     });
 });

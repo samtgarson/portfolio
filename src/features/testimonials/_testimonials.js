@@ -7,7 +7,8 @@ angular.module('testimonials', [])
                   words: n.fragments['story.quote'].value,
                   source: n.fragments['story.quote-source'].value,
                   project: n.fragments['story.title'].value[0].text,
-                  id: n.id
+                  id: n.id,
+                  read: !n.fragments['story.hidden'] || n.fragments['story.hidden'].value != 'true'
               };
           });
     });

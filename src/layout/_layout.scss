@@ -32,18 +32,18 @@ body {
         transition-timing-function: cubic-bezier(0.000, 1.085, 0.795, 1.000);
     }
     &.home::before {
-        transform: scale(2) rotate(-15deg) translateY(-45vh);
+        transform: scale(2) rotate(-15deg) translate3d(0, -45vh, 0);
     }
     &.stories::before {
-        transform: scale(2) rotate(10deg) translateX(50vw);   
+        transform: scale(2) rotate(10deg) translate3d(50vw, 0, 0);
     }
     &.story {
         &::before {
-        transform: scale(1.2) rotate(3deg) translateY(-12vh);      
+        transform: scale(1.2) rotate(3deg) translate3d(0, -12vh, 0);
         }
     }
     &.testimonials::before {
-        transform: scale(1.2) rotate(-3deg) translateY(50vw);   
+        transform: scale(1.2) rotate(-3deg) translate3d(0, 50vw, 0);
     }
 
     nav {
@@ -209,6 +209,22 @@ ui-view.main {
         }
     }
 }
+
+.testimonials ul {
+    margin-left: 40vw;
+    margin-top: 30vh;
+    @include small {
+        margin: 0px;
+        font-size: .9em;
+        margin-top: 120px;
+    }
+    .testimonial {
+        border: 0;
+        padding: 0;
+        max-width: 700px;
+    }
+}
+
 .story ui-view.main {
     margin-left: 40vw;
     position: relative;
@@ -444,6 +460,9 @@ ui-view.main {
                 transform: translateY(-50%) translateX(40px);
                 opacity: 1;
             }
+        }
+        &.no-read {
+            pointer-events: none;
         }
     }
 }
