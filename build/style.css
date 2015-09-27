@@ -2487,7 +2487,6 @@ h3.testimonial {
   line-height: 1.6em;
   padding-right: 30%;
   position: relative;
-  border-top: 2px solid black;
   padding-top: 60px; }
   h3.testimonial::before {
     content: "\201C";
@@ -2752,7 +2751,7 @@ h3.testimonial {
 .story img.cover {
   position: absolute;
   height: 450px;
-  opacity: 0.3;
+  opacity: 0.3 !important;
   left: -20vw;
   top: -15vh;
   z-index: -1; }
@@ -2763,8 +2762,7 @@ h3.testimonial {
   max-width: 750px; }
 .story .tags {
   padding: 0;
-  padding-top: 175px;
-  border-bottom: 2px solid black; }
+  padding-top: 175px; }
   @media only screen and (max-width: 800px) {
     .story .tags {
       text-align: center; } }
