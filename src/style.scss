@@ -36,13 +36,17 @@ a {
         display: block;
         content: ' ';
         width: 0;
-        transition: width .4s;
+        transition: width .4s ease, transform .1s ease;
         margin: -5px 0 0;      
       }
 
       &:active::after, &:hover::after {
         // text-decoration: underline;
         width: 100%;
+      }
+
+      &:active:after {
+        transform: translateY(4px);
       }
     }
 }

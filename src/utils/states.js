@@ -55,24 +55,28 @@ angular.module('states', [])
                 'templateUrl': templater('home'), 
                 'controller': 'homeController'
             })
-            .state('parent.stories', {
-                'url'               : 'stories',
-                'templateUrl': templater('stories'), 
-                'controller': 'storiesController'
-            })
             .state('parent.testimonials', {
                 'url'               : 'testimonials',
                 'templateUrl': templater('testimonials'), 
-                'controller': 'testimonialsController'
+                'controller': 'testimonialsController',
+                'data': {
+                    'title': 'testimonials'
+                }
             })
             .state('parent.about', {
                 'url'               : 'about',
                 'templateUrl': templater('talk'), 
-                'controller': 'talkController'
+                'controller': 'talkController',
+                'data': {
+                    'title': 'about'
+                }
             })
             .state('parent.story', {
                 'url'               : ':slug',
                 'templateUrl': templater('story'), 
-                'controller': 'storyController'
+                'controller': 'storyController',
+                'data': {
+                    'title': 'story'
+                }
             });
     });

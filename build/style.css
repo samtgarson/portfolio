@@ -2050,7 +2050,7 @@ ui-view.main.show ui-view > * {
   line-height: 2em;
   width: 100%;
   max-width: 750px;
-  top: -27.5vh;
+  top: -3.5em;
   height: 70px;
   display: block;
   font-size: 3em;
@@ -2062,9 +2062,6 @@ ui-view.main.show ui-view > * {
       font-size: 1.8em;
       line-height: 2.2em;
       margin-bottom: 110px; } }
-  @media only screen and (max-height: 660px) {
-    .about h1.heart {
-      display: none; } }
   .about h1.heart span {
     transition-property: all;
     transition-duration: 0.4s;
@@ -2275,12 +2272,14 @@ ui-view.main.show ui-view > * {
   margin-left: auto;
   margin-top: 250px;
   min-width: 400px;
-  max-width: 750px;
-  position: relative; }
-  @media only screen and (max-height: 660px) {
+  width: 750px;
+  max-width: 60%;
+  position: relative;
+  box-sizing: border-box; }
+  @media only screen and (max-width: 800px) {
     .about section {
-      font-size: 0.9em;
-      line-height: 180%; } }
+      padding: 0 20px;
+      margin: 150px auto; } }
   .about section ul {
     padding: 0; }
     .about section ul li {
@@ -2986,10 +2985,14 @@ input, textarea, button, select, a {
       display: block;
       content: ' ';
       width: 0;
-      transition: width 0.4s;
+      transition: width 0.4s ease, -webkit-transform 0.1s ease;
+      transition: width 0.4s ease, transform 0.1s ease;
       margin: -5px 0 0; }
     .clickable:not(.no-link):active::after, .clickable:not(.no-link):hover::after, [ui-sref]:not(.no-link):active::after, [ui-sref]:not(.no-link):hover::after, [ng-click]:not(.no-link):active::after, [ng-click]:not(.no-link):hover::after, [href]:not(.no-link):active::after, [href]:not(.no-link):hover::after {
       width: 100%; }
+    .clickable:not(.no-link):active:after, [ui-sref]:not(.no-link):active:after, [ng-click]:not(.no-link):active:after, [href]:not(.no-link):active:after {
+      -webkit-transform: translateY(4px);
+      transform: translateY(4px); }
 
 .right {
   float: right; }

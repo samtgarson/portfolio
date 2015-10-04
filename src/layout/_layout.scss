@@ -287,7 +287,7 @@ ui-view.main {
         line-height: 2em;
         width: 100%;
         max-width: 750px;
-        top: -27.5vh;
+        top: -3.5em;
         height: 70px;
         display: block;
         font-size: 3em;
@@ -301,10 +301,6 @@ ui-view.main {
             margin-bottom: 110px;
         }
 
-        @media only screen and (max-height: 660px) { 
-            display: none;
-        }
-
         span {
             @include spanTransition;
         }
@@ -315,11 +311,14 @@ ui-view.main {
         margin-left: auto;
         margin-top: 250px;
         min-width: 400px;
-        max-width: 750px;
+        width: 750px;
+        max-width: 60%;
         position: relative;
-        @media only screen and (max-height: 660px) { 
-            font-size: .9em;
-            line-height: 180%;
+        box-sizing: border-box;
+
+        @include small {
+            padding: 0 20px;
+            margin: 150px auto;
         }
 
         ul {

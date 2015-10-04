@@ -54,9 +54,9 @@ angular.module('app', [
             } else bypass = false;
         });
         $scope.$on('$stateChangeSuccess', function(e, toState) {
-            var split = toState.name.split('.').length > 1?toState.name.split('.')[1]:toState.name;
-            $scope.title = $filter('titlecase')(split) + ' | Sam Garson';
-            $scope.page = split.toLowerCase();
+            var split = toState.data && toState.data.title;
+            $scope.title = split ? $filter('titlecase')(split) + ' | Sam Garson' : 'Sam Garson';
+            $scope.page = toState.name.split('.')[1] || toState.name;
 
             if ($scope.page == 'story') {
                 scrollUp();
