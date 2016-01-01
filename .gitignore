@@ -7,3 +7,4 @@ node_modules
 .htaccess
 bower_components
 .divshot-cache
+env.js
