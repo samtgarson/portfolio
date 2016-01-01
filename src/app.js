@@ -8,7 +8,7 @@ angular.module('app', [
     'prismic.io',
     'angularMoment',
     'ngScroll',
-    'angulartics', 
+    'angulartics',
     'angulartics.google.analytics',
 
     // App
@@ -23,24 +23,24 @@ angular.module('app', [
     'stories',
     'story',
     'testimonials'
-    
+
     // Patterns
 ])
 
     .config(function(PrismicProvider, $logProvider, $analyticsProvider) {
+        if (!window.env) window.env = {};
         PrismicProvider.setApiEndpoint('https://samgarson.prismic.io/api');
         PrismicProvider.setLinkResolver(function(ctx, doc) {
             return 'stories/' + doc.id;
         });
         $logProvider.debugEnabled(true);
-        console.log(window.location.hostname!="www.samgarson.com");
-        $analyticsProvider.developerMode(window.location.hostname!="www.samgarson.com");
+        $analyticsProvider.developerMode(window.env.developerMode);
     })
 
     .controller('appController', function ($scope, $filter, $timeout, $state, $urlRouter) {
         $scope.hello = 'hello world';
         $scope.show = true;
-        
+
         $scope.title = "Sam Garson";
         var bypass = true;
         $scope.$on('$stateChangeStart', function(e, toState, toStateParams) {
